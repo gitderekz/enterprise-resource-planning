@@ -1,65 +1,44 @@
-'use client'; // Mark as a Client Component
-// import { createContext, useState, useEffect } from 'react';
+'use client';
+import { createContext, useContext, useState, useEffect } from 'react';
 
-// export const ThemeContext = createContext();
+export const ThemeContext = createContext();
 
-// export const ThemeProvider = ({ children }) => {
-//   const [theme, setTheme] = useState('light');
-
-//   useEffect(() => {
-//     const savedTheme = localStorage.getItem('theme') || 'light';
-//     setTheme(savedTheme);
-//   }, []);
-
-//   const toggleTheme = () => {
-//     const newTheme = theme === 'light' ? 'dark' : 'light';
-//     setTheme(newTheme);
-//     localStorage.setItem('theme', newTheme);
-//   };
-
-//   return (
-//     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-//       {children}
-//     </ThemeContext.Provider>
-//   );
-// };
-// lib/ThemeContext.tsx
-import React, { createContext, useState, useEffect } from 'react';
-
-export const ThemeContext = createContext(null);
-
-export const ThemeProvider = ({ children }) => {
+export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState('light');
 
-  const lightTheme = {
-    primary: '#6A3CBC', // Light Purple
-    secondary: '#8253D7', // Light Purple
-    tertiary: '#D4ADFC', // Light Lavender
-    background: '#f5f6fa', // Light background
-    text: '#2d3436', // Dark text color
-  };
-
-  const darkTheme = {
-    primary: '#070F2B', // Dark Blue
-    secondary: '#1B1A55', // Dark Purple
-    tertiary: '#535C91', // Medium Purple
-    background: '#9290C3', // Light Lavender background
-    text: '#ffffff', // Light text color
-  };
-
-  const [colors, setColors] = useState(lightTheme);
-
   useEffect(() => {
+    // Get theme from localStorage or use default
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
-    setColors(savedTheme === 'light' ? lightTheme : darkTheme);
+    document.documentElement.setAttribute('data-theme', savedTheme);
   }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
-    setColors(newTheme === 'light' ? lightTheme : darkTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
+  const colors = {
+    light: {
+      primary: '#8253D7',
+      secondary: '#461B93',
+      background: '#ffffff',
+      text: '#2d3436',
+      cardBg: '#f5f6fa',
+      sidebarBg: '#8253D7',
+      sidebarText: '#ffffff',
+    },
+    dark: {
+      primary: '#BB86FC',
+      secondary: '#3700B3',
+      background: '#121212',
+      text: '#e1e1e1',
+      cardBg: '#1e1e1e',
+      sidebarBg: '#1a1a2e',
+      sidebarText: '#ffffff',
+    },
   };
 
   return (
@@ -67,4 +46,12 @@ export const ThemeProvider = ({ children }) => {
       {children}
     </ThemeContext.Provider>
   );
-};
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}

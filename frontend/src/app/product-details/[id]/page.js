@@ -81,7 +81,13 @@ const ProductDetailsPage = () => {
         <Sidebar />
 
         {/* Scrollable Content */}
-        <div style={styles.content}>
+        {/* <div style={styles.content}> */}
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
           {/* Product Title and Last Update */}
           <h1 style={styles.productTitle}>{product.name}</h1>
           <div style={styles.lastUpdate}>Last update {product.lastUpdate}</div>
@@ -227,46 +233,6 @@ const styles = {
   mainContent: {
     display: 'flex',
     marginTop: '80px',
-  },
-  sidebar: {
-    position: 'fixed',
-    top: '80px',
-    left: 0,
-    width: '250px',
-    height: 'calc(100vh - 80px)',
-    backgroundColor: '#8253D7', // Purple sidebar
-    padding: '24px',
-    boxShadow: '2px 0 8px rgba(0, 0, 0, 0.1)',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    borderRadius: '0 12px 12px 0', // Rounded corners on the right side
-  },
-  sidebarTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#ffffff', // White text
-    marginBottom: '24px',
-  },
-  sidebarList: {
-    listStyle: 'none',
-    padding: '0',
-  },
-  sidebarItem: {
-    fontSize: '14px',
-    color: '#ffffff', // White text
-    marginBottom: '16px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '8px',
-    borderRadius: '8px',
-    transition: 'background-color 0.3s',
-  },
-  sidebarItemHover: {
-    backgroundColor: '#461B93', // Dark purple on hover
   },
   menuIcon: {
     color: '#ffffff', // White icons

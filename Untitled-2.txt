@@ -8,10 +8,12 @@ import {
   FaArrowRight, FaBars
 } from 'react-icons/fa'; // Icons from react-icons
 import { usePathname } from 'next/navigation';
+import { useSidebar } from '../../lib/SidebarContext';
 import { MenuContext } from '../../lib/MenuContext';
 
 export default function Sidebar() {
   const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible, toggleSidebar } = useSidebar();
   const router = useRouter();
   const [isSidebarVisible, setSidebarVisible] = useState(true); // New state to control sidebar visibility
 
@@ -138,6 +140,7 @@ import {
   FaArrowRight
 } from 'react-icons/fa'; // Icons from react-icons
 import { usePathname } from 'next/navigation';
+import { useSidebar } from '../../lib/SidebarContext';
 import { MenuContext } from '../../lib/MenuContext';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);

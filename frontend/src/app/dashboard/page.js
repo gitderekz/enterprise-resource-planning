@@ -9,22 +9,25 @@ import React, { useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { ThemeContext } from '../lib/ThemeContext';
+import { useTheme } from '../lib/ThemeContext'; // Updated import
+// import { ThemeContext } from '../lib/ThemeContext';
 import { useSharedStyles } from '../sharedStyles';
 import {
   FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt,
   FaArrowRight
 } from 'react-icons/fa'; // Icons from react-icons
 import { usePathname } from 'next/navigation';
+import { useSidebar } from '../lib/SidebarContext';
 import { MenuContext } from '../lib/MenuContext';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const DashboardPage = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, toggleTheme, colors } = useTheme(); // Updated to useTheme()
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth); // Get authentication state from Redux
   const router = useRouter();
+  const { isSidebarVisible, toggleSidebar } = useSidebar();
   const styles = useSharedStyles();
 
   const handleLogout = () => {
@@ -39,7 +42,7 @@ const DashboardPage = () => {
       {
         label: 'Sales',
         data: [12, 19, 3, 5, 2, 3],
-        backgroundColor: '#8253D7', // Purple bars
+        backgroundColor: colors[theme].primary, // Purple bars
         borderRadius: 10, // Rounded corners
       },
     ],
@@ -56,7 +59,13 @@ const DashboardPage = () => {
         <Sidebar/>
 
         {/* Scrollable Content */}
-        <div style={styles.content}>
+        {/*<div style={styles.content}>*/}
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
           {/* Top Section: 5 Cards with Scroll Arrow */}
           <div style={styles.topSection}>
             <div style={styles.cardScrollContainer}>

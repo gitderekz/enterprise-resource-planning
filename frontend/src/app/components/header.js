@@ -8,6 +8,7 @@ import {
   FaArrowRight
 } from 'react-icons/fa'; // Icons from react-icons
 import { usePathname } from 'next/navigation';
+import { useSidebar } from '../lib/SidebarContext';
 import { MenuContext } from '../lib/MenuContext';
 
 export default function Header() {
@@ -24,54 +25,74 @@ export default function Header() {
     router.push('/login');
   }
 
-  return (
-    // <nav className={`p-4 ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
-    //   <button onClick={toggleTheme}>
-    //     {theme === 'light' ? '🌙' : '☀️'}
-    //   </button>
-    // </nav>
+  const headerStyles = {
+    ...styles.header,
+    backgroundColor: colors[theme].background,
+    color: colors[theme].text,
+    boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+  };
 
-    <div style={styles.header}>
-      {/* Left Side: Logo and Search Bar */}
+  return (
+    <div style={headerStyles}>
       <div style={styles.headerLeft}>
-        <div style={styles.logo}>inventor.io</div>
-        <div style={styles.searchBar}>
-          <FaSearch style={styles.searchIcon} />
+        <div style={{ ...styles.logo, color: colors[theme].primary }}>inventor.io</div>
+        <div style={{ 
+          ...styles.searchBar, 
+          backgroundColor: theme === 'dark' ? '#2d2d2d' : '#f5f6fa',
+          borderColor: colors[theme].primary
+        }}>
+          <FaSearch style={{ ...styles.searchIcon, color: colors[theme].primary }} />
           <input
             type="text"
             placeholder="Search..."
-            style={styles.searchInput}
+            style={{ 
+              ...styles.searchInput,
+              color: colors[theme].text,
+              backgroundColor: 'transparent'
+            }}
           />
         </div>
       </div>
-      {/* Right Side: Icons */}
       <div style={styles.headerRight}>
-        <div className="flex justify-between items-center">
-          <span className="text-xl">{theme}</span>
-          <button onClick={toggleTheme} className="text-xl">
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
-        </div>
-        <FaCommentDots style={styles.icon} />
-        <FaBell style={styles.icon} />
-        <FaCog style={styles.icon} onClick={() => router.push('/settings')}/>
+        <button onClick={toggleTheme} style={styles.themeToggle}>
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
+        <FaCommentDots style={{ ...styles.icon, color: colors[theme].primary }} />
+        <FaBell style={{ ...styles.icon, color: colors[theme].primary }} />
+        <FaCog 
+          style={{ ...styles.icon, color: colors[theme].primary }} 
+          onClick={() => router.push('/settings')}
+        />
         <FaUserCircle
           onClick={() => setShowPopup((prev) => !prev)}
-          style={{ ...styles.icon, cursor: 'pointer' }}
+          style={{ ...styles.icon, color: colors[theme].primary, cursor: 'pointer' }}
         />
         {showPopup && (
-          <div style={styles.popup}>
+          <div style={{ 
+            ...styles.popup,
+            backgroundColor: colors[theme].cardBg,
+            boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.5)' : '0 2px 8px rgba(0, 0, 0, 0.2)',
+          }}>
             {isAuthenticated ? (
               <>
-                <button onClick={() => { router.push('/profile'); setShowPopup(false); }} style={styles.popupItem}>
+                <button 
+                  onClick={() => { router.push('/profile'); setShowPopup(false); }} 
+                  style={{ ...styles.popupItem, color: colors[theme].text }}
+                >
                   Profile
                 </button>
-                <button onClick={handleLogout} style={styles.popupItem}>
+                <button 
+                  onClick={handleLogout} 
+                  style={{ ...styles.popupItem, color: colors[theme].text }}
+                >
                   Logout
                 </button>
               </>
             ) : (
-              <button onClick={() => { router.push('/login'); setShowPopup(false); }} style={styles.popupItem}>
+              <button 
+                onClick={() => { router.push('/login'); setShowPopup(false); }} 
+                style={{ ...styles.popupItem, color: colors[theme].text }}
+              >
                 Login
               </button>
             )}
@@ -169,46 +190,6 @@ const styles = {
   mainContent: {
     display: 'flex',
     marginTop: '80px',
-  },
-  sidebar: {
-    position: 'fixed',
-    top: '80px',
-    left: 0,
-    width: '250px',
-    height: 'calc(100vh - 80px)',
-    backgroundColor: '#8253D7', // Purple sidebar
-    padding: '24px',
-    boxShadow: '2px 0 8px rgba(0, 0, 0, 0.1)',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    borderRadius: '0 12px 12px 0', // Rounded corners on the right side
-  },
-  sidebarTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#ffffff', // White text
-    marginBottom: '24px',
-  },
-  sidebarList: {
-    listStyle: 'none',
-    padding: '0',
-  },
-  sidebarItem: {
-    fontSize: '14px',
-    color: '#ffffff', // White text
-    marginBottom: '16px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '8px',
-    borderRadius: '8px',
-    transition: 'background-color 0.3s',
-  },
-  sidebarItemHover: {
-    backgroundColor: '#461B93', // Dark purple on hover
   },
   menuIcon: {
     color: '#ffffff', // White icons
