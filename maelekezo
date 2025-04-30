@@ -1,0 +1,176 @@
+First of all, i dont want app.js everything should be done in server.js
+Now lets make sequelize migrations for all tables and their columns just make them up
+Make all the essential auth methods in controller and routes
+Complete the backend by adding controllers, routes, and middleware for all features (tasks, inventory, invoices,User,Language)
+Implement all api endpoints
+
+And dont leave anything for me to finish by myself again
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Frontend Implementation
+Pages
+Login Page
+Form for email/username and password.
+Language and theme toggle.
+Dashboard
+Role-specific widgets (tasks, inventory status, alerts).
+Quick links to tasks, inventory, and invoices.
+User Management (Admin)
+List of users with CRUD operations.
+Task Management
+Task creation, assignment, and status updates.
+Inventory Management
+View and update inventory with low-stock alerts.
+Invoice Management
+List of invoices with filtering options.
+Profile Page
+Edit user information, theme, and language preferences.
+
+Dynamic Menus
+Fetch menu items from the backend based on the user’s role.
+Theme Toggle
+Multi-language Support
+Use i18next for translations:
+
+Additional Features
+Real-time Updates: Use WebSockets for real-time task and inventory updates.
+Reporting: Generate PDF reports for tasks, inventory, and invoices.
+Notifications: Implement email or in-app notifications for alerts.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+
+Yes i want to dive deeper into any of these features
+Also, I don't understand where to put 
+lib/i18n.js
+I18nextProvider in _app.js
+Maybe help me with file structure and just so you know i put my pages in frontend/src/pages
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+I thought the background on the login page was deep purple, and sidebar in dashboard is purple dont you think?
+
+On the dashboard, looks like 
+the top left corner has logo "inventor.io"
+Followed by a search bar still on the left
+Then on the top right end there are icons chat,bell,settings and user icons
+Lets implement this i'm not sure whether it is called navigation bar OR Header
+
+----------------------------
+The content Section has two section/row
+The first top section/row has 5 card on display and an arrow(#D4ADFC color) to scroll to the next cards
+Each card has 3 rows of text, a bold random number(#461B93 color), a unit(#8253D7 color) and The title below(black)
+
+The second section/row (White background while its cards are ##f5f6fa) has two rows/section
+The first on top has first card(##f5f6fa color) with barchart with thin bar with rounded corners, second card(##f5f6fa color) has 3x2 cards(#D4ADFC) with various icons 
+The second row/section has first card(##f5f6fa color) with 2 column "Stock number" list of "Low stock item   12", "Item categories   6", "Refunded items   3" and the second card(##f5f6fa color) 
+has 4 column "Store list" i.e "Arusha   20-employees  100-items  2-orders","Arusha   20-employees  100-items  2-orders","Arusha   20-employees  100-items  2-orders",
+
+------------------------------
+In scrollable contet The bottom section should occupy the visible width between the sidebar and scrollbar
+The add product and log out buttons should just be like text buttons and they should be at the bottom
+And the side menu should have icons before every menu [Home,Products,Categories,Stores,Finances,Settings,add product,log out]
+Remember to leave good space between menus
+
+--------------------------------------
+Make the icons on header,text Logo and outline of search field and it placeholder/label to have (#6A3CBC color)
+The background on the login page should be (#461B93) and the form should have no card & elevation, Just place everything horizontally center and start after 1/4 vertically from the top 
+Also sidebar in dashboard is (#8253D7 color, And its menus and icons are white, While its menu hovered it turns  #461B93)
+
+---------------------------------
+In the Login
+The login fields & button should be white, and button text should be like the page background
+The logo should be white at the center 
+And you should increase the width of fields and button a bit
+And whole form from Logo to button should occupy the bottom 3/4 of the screen and leave space on top 1/4 of screen
+
+-------------------------------------------
+In dashboard the sidebar should have rounded corners 
+-------------------------------------------
+Actually in this products page content section
+Ontop it has Page name "Products", Followed by search field(White with #6A3CBC for lebel/placeholder and icon) ,Followed by Filter by dropdown(#CDC1FF color but text has #461B93), Followed by Add Product button(#461B93 with white color for text and icon)
+Below it has a table with headers[Name of product, status, stock info,category,Location] and each header is followed by sort icon. This is has top border(#8253D7) and bottom border(#6A3CBC)
+Then in table content/body
+First column has checkbox(#6A3CBC), Small Image with rounded corners and a Name
+Second column has a Text sorounded by a rounded badge its either Active(#8253D7) sold out(#461B93) or Low in stock(#6A3CBC)
+Third column stock info like "12 in stock","10 in stock","2 in stock", if it is "0 in stock"Then text appear faded/inactive for all the columns
+Fourth column display categories either T-shhirt,Top,Outwear,Accessories, Bottoms, Dresses
+Fifth column display either Store 2,Store 1, Store 4, Store 3 
+
+Once you click on a certain item from the table, it opens a screen to display its item details, While maintaining header and sidebar
+on top it has Product name/title
+Below it it has text "Last update, date and time"
+Below it it has a section with white backgroud, And on top this section is a section sorounded by a rounded border(#461B93) and it has two columns, 
+The left [column it display a [row that has two [columns
+[The first column is an image with rounded corners,
+The second columns has Name,Brand,empty Space,Available sizes, Categories,Gender]]], Then below it has a row that has two columns, The first column display a barcode, the second column display product code and order name]
+The right column has a row on top that Display Delete(outlined round button) and Edit product(#461B93), Then below is a borderless table with the title Store availability and has 2 columns, Then has 4 rows/entries ,[Store 1 => check mark(Icon), Store 2 => check mark(Icon), store 3 => red cross(Icon), store 4 = > check mark(Icon)]
+
+-----------------------------------------------
+,FaCommentDots,FaBell,
+  FaUserCircle,
+  FaHome,
+  FaBox,
+  FaList,
+  FaStore,
+  FaWallet,
+  FaCog,
+  FaSignOutAlt,
+
+-----------------------------------------------
+Mfumo ufanye vitu gani 
+Department ngapi
+Wangapi watatumia mfumo na roles/majukumu
+
+-----------------------------------------------
+Correct the following..
+-In Stores
+The scrollable content has white background, it has search field, filter by and add store button just like the Products page
+Below that it has horizontal list of store cards(#f5f6fa) with picture and name
+Once a card is selected it display its details by showing a card/div with rounded corners border(#6A3CBC) And this card/div has a close button on top right corner. I has Title/name, List of its multiple pictures with rounded corners, And a row with two columns looks like
+Employees: 11     Most sold items: Unisex T-shirt Block
+Items: 291        Most popular category: T-shirts
+Orders: 1         Customer satisfaction: 89%
+Refunds: 0        Status: Open
+
+-Add Product
+It has white background, Row with Two columns, The first column has [name,description,category,price] the second column has [item code, stock size,stores availability,product photos]
+Thes save product button comes below at the center
+
+-Finances
+it has white background, on top it has "view range" dropdown date filter then the dates on range like "February 2022 - March 2024"
+After this It comes 3 div/cards [net sales,gross profit,margin] each sorounded by border with color(#6A3CBC). These displays barcharts with rounded bars on top and bottom
+Lastly it has a card(#f5f6fa background) spaning the whole width it can get, it has barchart "revenue breakdown", each bar has multiple data and multiple color sections, They are also rounded on top and bottom. Data presented are [bottoms,t-shirt,tops,accessories,jeans] 
+
+-Settings
+In here you just need to rearange the contents
+personalInfo - Should split its content into two columns  
+roleSection ans permissionsSection should be on the same row and each one to take its column
+permissionsSection - should appear in this fashion
+                      VIEW      EDIT       CREATE       APPROVAL
+Customer   FaCheck    toggle    toggle     toggle       toggle 
+Product    FaCheck    toggle    toggle     toggle       toggle 
+User       FaCheck    toggle    toggle     toggle       toggle 
+Supplier   FaCheck    toggle    toggle     toggle       toggle 
+Store      FaCheck    toggle    toggle     toggle       toggle 
+Billing    FaCheck    toggle    toggle     toggle       toggle
+
+
+WEB-BACKEND
+node
+php - laravel
+java
+python
+
+WEB-FRONTEND
+react
+next
+laravel - blade
+vue
+
+MOBILE
+flutter
+java - xml
+ReactNative
+
+
+
+
