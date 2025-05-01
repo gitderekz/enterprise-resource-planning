@@ -1,3 +1,4 @@
+"use client"
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { logout } from '../lib/authSlice';
 import { useDispatch, useSelector } from 'react-redux';

@@ -1,174 +1,205 @@
-'use client'; // Mark as a Client Component
-import React, { useEffect, useState } from 'react'; // Import useState and useEffect
-import { useRouter,usePathname,useParams } from 'next/navigation'; // Next.js router
-import {
-  FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt, FaEdit, FaTrash, FaCheck, FaTimes,
-} from 'react-icons/fa'; // Icons from react-icons
-import { MenuContext } from '../../lib/MenuContext';
-import { useSidebar } from '../../lib/SidebarContext';
-import Sidebar from '@/app/components/sidebar';
-import Header from '@/app/components/header';
+// /app/product-details/[id]/page.js
+import ProductDetailsClient from './ProductDetailsClient';
+// Dummy products data
+const products = [
+  {
+    id: 1,
+    image: 'https://cdn.pixabay.com/photo/2025/03/09/16/02/hare-9457418_1280.jpg',
+    name: 'Unisex T-Shirt White',
+    brand: 'Unnamed Brand',
+    sizes: 'XS, S, M, L, XL, XXL',
+    category: 'T-Shirt',
+    gender: 'Male, Female',
+    barcode: '123456789',
+    productCode: 'TS123',
+    orderName: 'Order #12345',
+    lastUpdate: 'January 29, 2023 at 2:39PM',
+    storeAvailability: [
+      { store: 'Store 1', available: true },
+      { store: 'Store 2', available: true },
+      { store: 'Store 3', available: false },
+      { store: 'Store 4', available: true },
+    ],
+  },
+  {
+    id: 2,
+    image: 'https://cdn.pixabay.com/photo/2025/03/09/16/02/hare-9457418_1280.jpg',
+    name: 'Unisex T-Shirt Block',
+    brand: 'Unnamed Brand',
+    sizes: 'XS, S, M, L, XL, XXL',
+    category: 'T-Shirt',
+    gender: 'Male, Female',
+    barcode: '987654321',
+    productCode: 'TS456',
+    orderName: 'Order #67890',
+    lastUpdate: 'January 30, 2023 at 3:45PM',
+    storeAvailability: [
+      { store: 'Store 1', available: true },
+      { store: 'Store 2', available: false },
+      { store: 'Store 3', available: true },
+      { store: 'Store 4', available: false },
+    ],
+  },
+];
+export async function generateStaticParams() {
+  return products.map((p) => ({ id: p.id.toString() }));
 
-const ProductDetailsPage = () => {
-    const router = useRouter();
-    const pathName = usePathname();
-    const params = useParams()
-    const { isSidebarVisible, toggleSidebar } = useSidebar();
+  // return [
+  //   { id: '1' },
+  //   { id: '2' },
+  //   // Add more as needed
+  // ];
+}
 
-    const { id } = params; // Get product ID from URL
-
-    if (!id) {
-      return <div>Loading...</div>; // Optionally show a loading state until productId is available
-    }
-
-    const products = [
-        {
-          id: 1,
-          image: 'https://cdn.pixabay.com/photo/2025/03/09/16/02/hare-9457418_1280.jpg',
-          name: 'Unisex T-Shirt White',
-          brand: 'Unnamed Brand',
-          sizes: 'XS, S, M, L, XL, XXL',
-          category: 'T-Shirt',
-          gender: 'Male, Female',
-          barcode: '123456789',
-          productCode: 'TS123',
-          orderName: 'Order #12345',
-          lastUpdate: 'January 29, 2023 at 2:39PM',
-          storeAvailability: [
-            { store: 'Store 1', available: true },
-            { store: 'Store 2', available: true },
-            { store: 'Store 3', available: false },
-            { store: 'Store 4', available: true },
-          ],
-        },
-        {
-          id: 2,
-          image: 'https://cdn.pixabay.com/photo/2025/03/09/16/02/hare-9457418_1280.jpg',
-          name: 'Unisex T-Shirt Block',
-          brand: 'Unnamed Brand',
-          sizes: 'XS, S, M, L, XL, XXL',
-          category: 'T-Shirt',
-          gender: 'Male, Female',
-          barcode: '987654321',
-          productCode: 'TS456',
-          orderName: 'Order #67890',
-          lastUpdate: 'January 30, 2023 at 3:45PM',
-          storeAvailability: [
-            { store: 'Store 1', available: true },
-            { store: 'Store 2', available: false },
-            { store: 'Store 3', available: true },
-            { store: 'Store 4', available: false },
-          ],
-        },
-        // Add more products here
-      ];
+export default function Page({ params }) {
+  return <ProductDetailsClient id={params.id} />;
+}
 
 
-    // Find the product by ID
-    const product = products.find((p) => p.id === parseInt(id));
+// 'use client';
+// import {
+//   FaEdit, FaTrash, FaCheck, FaTimes,
+// } from 'react-icons/fa';
+// import Sidebar from '@/app/components/sidebar';
+// import Header from '@/app/components/header';
+// import { useSidebar } from '../../lib/SidebarContext';
 
-    if (!product) {
-        return <div>Product not found</div>;
-    }
+// // Dummy products data
+// const products = [
+//   {
+//     id: 1,
+//     image: 'https://cdn.pixabay.com/photo/2025/03/09/16/02/hare-9457418_1280.jpg',
+//     name: 'Unisex T-Shirt White',
+//     brand: 'Unnamed Brand',
+//     sizes: 'XS, S, M, L, XL, XXL',
+//     category: 'T-Shirt',
+//     gender: 'Male, Female',
+//     barcode: '123456789',
+//     productCode: 'TS123',
+//     orderName: 'Order #12345',
+//     lastUpdate: 'January 29, 2023 at 2:39PM',
+//     storeAvailability: [
+//       { store: 'Store 1', available: true },
+//       { store: 'Store 2', available: true },
+//       { store: 'Store 3', available: false },
+//       { store: 'Store 4', available: true },
+//     ],
+//   },
+//   {
+//     id: 2,
+//     image: 'https://cdn.pixabay.com/photo/2025/03/09/16/02/hare-9457418_1280.jpg',
+//     name: 'Unisex T-Shirt Block',
+//     brand: 'Unnamed Brand',
+//     sizes: 'XS, S, M, L, XL, XXL',
+//     category: 'T-Shirt',
+//     gender: 'Male, Female',
+//     barcode: '987654321',
+//     productCode: 'TS456',
+//     orderName: 'Order #67890',
+//     lastUpdate: 'January 30, 2023 at 3:45PM',
+//     storeAvailability: [
+//       { store: 'Store 1', available: true },
+//       { store: 'Store 2', available: false },
+//       { store: 'Store 3', available: true },
+//       { store: 'Store 4', available: false },
+//     ],
+//   },
+// ];
 
+// // Server Component with params
+// export default function ProductDetailsPage({ params }) {
+//   const { id } = params;
+//   const product = products.find((p) => p.id === parseInt(id));
+//   const { isSidebarVisible } = useSidebar();
 
-  return (
-    <div style={styles.container}>
-      {/* Header */}
-      <Header />
+//   if (!product) return <div>Product not found</div>;
 
-      {/* Main Content */}
-      <div style={styles.mainContent}>
-        {/* Sidebar */}
-        <Sidebar />
+//   return (
+//     <div style={styles.container}>
+//       <Header />
+//       <div style={styles.mainContent}>
+//         <Sidebar />
+//         <div style={{
+//           marginLeft: isSidebarVisible ? '250px' : '0',
+//           padding: '24px',
+//           width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+//           transition: 'all 0.3s ease',
+//         }}>
+//           <h1 style={styles.productTitle}>{product.name}</h1>
+//           <div style={styles.lastUpdate}>Last update {product.lastUpdate}</div>
 
-        {/* Scrollable Content */}
-        {/* <div style={styles.content}> */}
-        <div style={{ 
-          marginLeft: isSidebarVisible ? '250px' : '0',
-          padding: '24px',
-          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
-          transition: 'all 0.3s ease',
-        }}>
-          {/* Product Title and Last Update */}
-          <h1 style={styles.productTitle}>{product.name}</h1>
-          <div style={styles.lastUpdate}>Last update {product.lastUpdate}</div>
+//           <div style={styles.detailsSection}>
+//             <div style={styles.leftColumn}>
+//               <div style={styles.imageRow}>
+//                 <img src={product.image} alt={product.name} style={styles.productImage} />
+//                 <div style={styles.basicInfo}>
+//                   <div style={styles.productName}>{product.name}</div>
+//                   <div style={styles.productBrand}>{product.brand}</div>
+//                   <div style={styles.availableSizes}>Available sizes: {product.sizes}</div>
+//                   <div style={styles.productCategory}>Category: {product.category}</div>
+//                   <div style={styles.productGender}>Gender: {product.gender}</div>
+//                 </div>
+//               </div>
 
-          {/* Product Details Section */}
-          <div style={styles.detailsSection}>
-            {/* Left Column */}
-            <div style={styles.leftColumn}>
-              {/* Image and Basic Info */}
-              <div style={styles.imageRow}>
-                <img src={product.image} alt={product.name} style={styles.productImage} />
-                <div style={styles.basicInfo}>
-                  <div style={styles.productName}>{product.name}</div>
-                  <div style={styles.productBrand}>{product.brand}</div>
-                  <div style={styles.availableSizes}>Available sizes: {product.sizes}</div>
-                  <div style={styles.productCategory}>Category: {product.category}</div>
-                  <div style={styles.productGender}>Gender: {product.gender}</div>
-                </div>
-              </div>
+//               <div style={styles.infoRow}>
+//                 <div style={styles.infoColumn}>
+//                   <div style={styles.infoLabel}>Barcode</div>
+//                   <div style={styles.infoValue}>{product.barcode}</div>
+//                 </div>
+//                 <div style={styles.infoColumn}>
+//                   <div style={styles.infoLabel}>Product Code</div>
+//                   <div style={styles.infoValue}>{product.productCode}</div>
+//                   <div style={styles.infoLabel}>Order Name</div>
+//                   <div style={styles.infoValue}>{product.orderName}</div>
+//                 </div>
+//               </div>
+//             </div>
 
-              {/* Barcode, Product Code, and Order Name */}
-              <div style={styles.infoRow}>
-                <div style={styles.infoColumn}>
-                  <div style={styles.infoLabel}>Barcode</div>
-                  <div style={styles.infoValue}>{product.barcode}</div>
-                </div>
-                <div style={styles.infoColumn}>
-                  <div style={styles.infoLabel}>Product Code</div>
-                  <div style={styles.infoValue}>{product.productCode}</div>
+//             <div style={styles.rightColumn}>
+//               <div style={styles.actionsRow}>
+//                 <button style={styles.deleteButton}>
+//                   <FaTrash style={styles.buttonIcon} /> Delete
+//                 </button>
+//                 <button style={styles.editButton}>
+//                   <FaEdit style={styles.buttonIcon} /> Edit Product
+//                 </button>
+//               </div>
 
-                  <div style={styles.infoLabel}>Order Name</div>
-                  <div style={styles.infoValue}>{product.orderName}</div>
-                </div>
-              </div>
-            </div>
+//               <div style={styles.storeAvailability}>
+//                 <h3 style={styles.storeAvailabilityTitle}>Store Availability</h3>
+//                 <div style={styles.storeTable}>
+//                   <div style={styles.storeTableHeader}>
+//                     <div style={styles.storeTableHeaderCell}>Store</div>
+//                     <div style={styles.storeTableHeaderCell}>Availability</div>
+//                   </div>
+//                   <div style={styles.storeTableBody}>
+//                     {product.storeAvailability.map((store, index) => (
+//                       <div key={index} style={styles.storeTableRow}>
+//                         <div style={styles.storeTableCell}>{store.store}</div>
+//                         <div style={styles.storeTableCell}>
+//                           {store.available ? (
+//                             <FaCheck style={styles.checkIcon} />
+//                           ) : (
+//                             <FaTimes style={styles.timesIcon} />
+//                           )}
+//                         </div>
+//                       </div>
+//                     ))}
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 
-            {/* Right Column */}
-            <div style={styles.rightColumn}>
-              {/* Delete and Edit Buttons */}
-              <div style={styles.actionsRow}>
-                <button style={styles.deleteButton}>
-                  <FaTrash style={styles.buttonIcon} /> Delete
-                </button>
-                <button style={styles.editButton}>
-                  <FaEdit style={styles.buttonIcon} /> Edit Product
-                </button>
-              </div>
-
-              {/* Store Availability Table */}
-              <div style={styles.storeAvailability}>
-                <h3 style={styles.storeAvailabilityTitle}>Store Availability</h3>
-                <div style={styles.storeTable}>
-                  <div style={styles.storeTableHeader}>
-                    <div style={styles.storeTableHeaderCell}>Store</div>
-                    <div style={styles.storeTableHeaderCell}>Availability</div>
-                  </div>
-                  <div style={styles.storeTableBody}>
-                    {product.storeAvailability.map((store, index) => (
-                      <div key={index} style={styles.storeTableRow}>
-                        <div style={styles.storeTableCell}>{store.store}</div>
-                        <div style={styles.storeTableCell}>
-                          {store.available ? (
-                            <FaCheck style={styles.checkIcon} />
-                          ) : (
-                            <FaTimes style={styles.timesIcon} />
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+// // Static generation for dynamic [id]
+// export async function generateStaticParams() {
+//   return products.map((p) => ({ id: p.id.toString() }));
+// }
 
 const styles = {
   container: {
@@ -433,4 +464,174 @@ const styles = {
   },
 };
 
-export default ProductDetailsPage;
+// 'use client'; // Mark as a Client Component
+// import React, { useEffect, useState } from 'react'; // Import useState and useEffect
+// import { useRouter,usePathname,useParams } from 'next/navigation'; // Next.js router
+// import {
+//   FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt, FaEdit, FaTrash, FaCheck, FaTimes,
+// } from 'react-icons/fa'; // Icons from react-icons
+// import { MenuContext } from '../../lib/MenuContext';
+// import { useSidebar } from '../../lib/SidebarContext';
+// import Sidebar from '@/app/components/sidebar';
+// import Header from '@/app/components/header';
+
+// const ProductDetailsPage = () => {
+//     const router = useRouter();
+//     const pathName = usePathname();
+//     const params = useParams()
+//     const { isSidebarVisible, toggleSidebar } = useSidebar();
+
+//     const { id } = params; // Get product ID from URL
+
+//     if (!id) {
+//       return <div>Loading...</div>; // Optionally show a loading state until productId is available
+//     }
+
+//     const products = [
+//         {
+//           id: 1,
+//           image: 'https://cdn.pixabay.com/photo/2025/03/09/16/02/hare-9457418_1280.jpg',
+//           name: 'Unisex T-Shirt White',
+//           brand: 'Unnamed Brand',
+//           sizes: 'XS, S, M, L, XL, XXL',
+//           category: 'T-Shirt',
+//           gender: 'Male, Female',
+//           barcode: '123456789',
+//           productCode: 'TS123',
+//           orderName: 'Order #12345',
+//           lastUpdate: 'January 29, 2023 at 2:39PM',
+//           storeAvailability: [
+//             { store: 'Store 1', available: true },
+//             { store: 'Store 2', available: true },
+//             { store: 'Store 3', available: false },
+//             { store: 'Store 4', available: true },
+//           ],
+//         },
+//         {
+//           id: 2,
+//           image: 'https://cdn.pixabay.com/photo/2025/03/09/16/02/hare-9457418_1280.jpg',
+//           name: 'Unisex T-Shirt Block',
+//           brand: 'Unnamed Brand',
+//           sizes: 'XS, S, M, L, XL, XXL',
+//           category: 'T-Shirt',
+//           gender: 'Male, Female',
+//           barcode: '987654321',
+//           productCode: 'TS456',
+//           orderName: 'Order #67890',
+//           lastUpdate: 'January 30, 2023 at 3:45PM',
+//           storeAvailability: [
+//             { store: 'Store 1', available: true },
+//             { store: 'Store 2', available: false },
+//             { store: 'Store 3', available: true },
+//             { store: 'Store 4', available: false },
+//           ],
+//         },
+//         // Add more products here
+//       ];
+
+
+//     // Find the product by ID
+//     const product = products.find((p) => p.id === parseInt(id));
+
+//     if (!product) {
+//         return <div>Product not found</div>;
+//     }
+
+
+//   return (
+//     <div style={styles.container}>
+//       {/* Header */}
+//       <Header />
+
+//       {/* Main Content */}
+//       <div style={styles.mainContent}>
+//         {/* Sidebar */}
+//         <Sidebar />
+
+//         {/* Scrollable Content */}
+//         {/* <div style={styles.content}> */}
+//         <div style={{ 
+//           marginLeft: isSidebarVisible ? '250px' : '0',
+//           padding: '24px',
+//           width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+//           transition: 'all 0.3s ease',
+//         }}>
+//           {/* Product Title and Last Update */}
+//           <h1 style={styles.productTitle}>{product.name}</h1>
+//           <div style={styles.lastUpdate}>Last update {product.lastUpdate}</div>
+
+//           {/* Product Details Section */}
+//           <div style={styles.detailsSection}>
+//             {/* Left Column */}
+//             <div style={styles.leftColumn}>
+//               {/* Image and Basic Info */}
+//               <div style={styles.imageRow}>
+//                 <img src={product.image} alt={product.name} style={styles.productImage} />
+//                 <div style={styles.basicInfo}>
+//                   <div style={styles.productName}>{product.name}</div>
+//                   <div style={styles.productBrand}>{product.brand}</div>
+//                   <div style={styles.availableSizes}>Available sizes: {product.sizes}</div>
+//                   <div style={styles.productCategory}>Category: {product.category}</div>
+//                   <div style={styles.productGender}>Gender: {product.gender}</div>
+//                 </div>
+//               </div>
+
+//               {/* Barcode, Product Code, and Order Name */}
+//               <div style={styles.infoRow}>
+//                 <div style={styles.infoColumn}>
+//                   <div style={styles.infoLabel}>Barcode</div>
+//                   <div style={styles.infoValue}>{product.barcode}</div>
+//                 </div>
+//                 <div style={styles.infoColumn}>
+//                   <div style={styles.infoLabel}>Product Code</div>
+//                   <div style={styles.infoValue}>{product.productCode}</div>
+
+//                   <div style={styles.infoLabel}>Order Name</div>
+//                   <div style={styles.infoValue}>{product.orderName}</div>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Right Column */}
+//             <div style={styles.rightColumn}>
+//               {/* Delete and Edit Buttons */}
+//               <div style={styles.actionsRow}>
+//                 <button style={styles.deleteButton}>
+//                   <FaTrash style={styles.buttonIcon} /> Delete
+//                 </button>
+//                 <button style={styles.editButton}>
+//                   <FaEdit style={styles.buttonIcon} /> Edit Product
+//                 </button>
+//               </div>
+
+//               {/* Store Availability Table */}
+//               <div style={styles.storeAvailability}>
+//                 <h3 style={styles.storeAvailabilityTitle}>Store Availability</h3>
+//                 <div style={styles.storeTable}>
+//                   <div style={styles.storeTableHeader}>
+//                     <div style={styles.storeTableHeaderCell}>Store</div>
+//                     <div style={styles.storeTableHeaderCell}>Availability</div>
+//                   </div>
+//                   <div style={styles.storeTableBody}>
+//                     {product.storeAvailability.map((store, index) => (
+//                       <div key={index} style={styles.storeTableRow}>
+//                         <div style={styles.storeTableCell}>{store.store}</div>
+//                         <div style={styles.storeTableCell}>
+//                           {store.available ? (
+//                             <FaCheck style={styles.checkIcon} />
+//                           ) : (
+//                             <FaTimes style={styles.timesIcon} />
+//                           )}
+//                         </div>
+//                       </div>
+//                     ))}
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
