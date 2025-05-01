@@ -15,9 +15,10 @@
   },
   "production": {
     "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
+    "password": "mariadb12.",
+    "database": "enterprise_resource_planning",
+    "host": "89.117.36.40",
+    "port": 3307,
     "dialect": "mysql"
   }
 }
