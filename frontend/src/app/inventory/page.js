@@ -4,11 +4,11 @@ import {
   FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt,
 } from 'react-icons/fa'; // Icons from react-icons
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '../../lib/SidebarContext';
-import { MenuContext } from '../../lib/MenuContext';
-import Header from '../../components/header';
-import Sidebar from '../../components/sidebar';
-import { useSharedStyles } from '../../sharedStyles';
+import { useSidebar } from '../lib/SidebarContext';
+import { MenuContext } from '../lib/MenuContext';
+import Header from '../components/header';
+import Sidebar from '../components/sidebar';
+import { useSharedStyles } from '../sharedStyles';
 
 const inventoryPage = () => {
   
