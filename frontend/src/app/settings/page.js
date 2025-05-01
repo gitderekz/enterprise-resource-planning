@@ -67,7 +67,7 @@ const SettingsPage = () => {
               </div>
               <div style={styles.infoGroup}>
                 <label style={styles.label}>Company email*</label>
-                <input type="email" value="j.hopkins@inventor.io" style={styles.input} readOnly />
+                <input type="email" value="j.hopkins@enrep.sys" style={styles.input} readOnly />
               </div>
             </div>
             <div style={styles.personalInfoColumn}>

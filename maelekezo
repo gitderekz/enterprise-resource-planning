@@ -49,7 +49,7 @@ Maybe help me with file structure and just so you know i put my pages in fronten
 I thought the background on the login page was deep purple, and sidebar in dashboard is purple dont you think?
 
 On the dashboard, looks like 
-the top left corner has logo "inventor.io"
+the top left corner has logo "enrep.sys"
 Followed by a search bar still on the left
 Then on the top right end there are icons chat,bell,settings and user icons
 Lets implement this i'm not sure whether it is called navigation bar OR Header
@@ -170,7 +170,3 @@ MOBILE
 flutter
 java - xml
 ReactNative
-
-
-
-

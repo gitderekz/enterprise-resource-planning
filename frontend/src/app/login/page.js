@@ -100,7 +100,7 @@ const LoginPage = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.logo}>inventor.io</div>
+      <div style={styles.logo}>enrep.sys</div>
       <form style={styles.form} onSubmit={handleLogin}>
         <div style={styles.inputGroup}>
           <label htmlFor="username" style={styles.label}>Username</label>

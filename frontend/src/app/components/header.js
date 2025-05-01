@@ -35,7 +35,7 @@ export default function Header() {
   return (
     <div style={headerStyles}>
       <div style={styles.headerLeft}>
-        <div style={{ ...styles.logo, color: colors[theme].primary }}>inventor.io</div>
+        <div style={{ ...styles.logo, color: colors[theme].primary }}>enrep.sys</div>
         <div style={{ 
           ...styles.searchBar, 
           backgroundColor: theme === 'dark' ? '#2d2d2d' : '#f5f6fa',

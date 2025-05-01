@@ -68,7 +68,7 @@ const ProductDetailsPage = () => {
       <div style={styles.header}>
         {/* Left Side: Logo and Search Bar */}
         <div style={styles.headerLeft}>
-          <div style={styles.logo}>inventor.io</div>
+          <div style={styles.logo}>enrep.sys</div>
           <div style={styles.searchBar}>
             <FaSearch style={styles.searchIcon} />
             <input

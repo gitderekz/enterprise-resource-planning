@@ -11,13 +11,14 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { WebSocketProvider } from './lib/WebSocketContext';
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '../../lib/SidebarContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSelector } from 'react-redux';
 import type { RootState } from './lib/store'; // adjust path as needed
 import { SidebarProvider } from './lib/SidebarContext';
-
+import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
+import { login } from './lib/authSlice'; // adjust to your actual path
+import LoadingSpinner from './components/LoadingSpinner'; // adjust to your actual path
 import { useSharedStyles } from './sharedStyles';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -54,25 +55,105 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }
 
+// function AuthWrapper({ children }: { children: React.ReactNode }) {
+//   const router = useRouter();
+//   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+//   useEffect(() => {
+//     if (!isAuthenticated) {
+//       router.push('/login');
+//     }
+//   }, [isAuthenticated, router]);
+
+//   if (!isAuthenticated) {
+//     return null; // or a loading spinner
+//   }
+
+//   return <>{children}</>;
+// }
+
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, router]);
+    const verifyAuth = async () => {
+      const token = localStorage.getItem('token');
+      const refreshToken = localStorage.getItem('refreshToken');
 
-  if (!isAuthenticated) {
-    return null; // or a loading spinner
-  }
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        // Verify token
+        const verifyRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        dispatch(login({ 
+          token,
+          user: verifyRes.data.user 
+        }));
+      } catch (error) {
+        // Try to refresh token if verify fails
+        try {
+          const refreshRes = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, {
+            refreshToken
+          });
+          
+          localStorage.setItem('token', refreshRes.data.token);
+          dispatch(login({
+            token: refreshRes.data.token,
+            user: refreshRes.data.user
+          }));
+        } catch (refreshError) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          router.push('/login');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifyAuth();
+
+    // Set up token refresh interval (every 15 minutes)
+    const interval = setInterval(() => {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, { refreshToken })
+          .then(res => {
+            localStorage.setItem('token', res.data.token);
+            dispatch(login({ token: res.data.token }));
+          })
+          .catch(() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            router.push('/login');
+          });
+      }
+    }, 15 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [dispatch, router]);
+
+  if (loading) return <LoadingSpinner />;
+  if (!isAuthenticated) return null;
 
   return <>{children}</>;
 }
+
+
+
+
+
 // 'use client';
 // import { usePathname } from 'next/navigation';
-import { useSidebar } from '../../lib/SidebarContext';
 // import { Provider } from 'react-redux';
 // import store from './lib/store';
 // import './globals.css';
