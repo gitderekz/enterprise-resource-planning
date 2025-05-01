@@ -12,9 +12,6 @@ import {
   FaCog,
   FaSignOutAlt,
 } from 'react-icons/fa'; // Icons from react-icons
-import { usePathname } from 'next/navigation';
-import { useSidebar } from '../../lib/SidebarContext';
-import { MenuContext } from '../../lib/MenuContext';
 import Header from '../components/header';
 import Sidebar from '../components/sidebar';
 import { useSharedStyles } from '../sharedStyles';

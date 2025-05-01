@@ -4,9 +4,6 @@ import {
   FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt,
   FaFilter,FaTimes
 } from 'react-icons/fa'; // Icons from react-icons
-import { usePathname } from 'next/navigation';
-import { useSidebar } from '../../lib/SidebarContext';
-import { MenuContext } from '../../lib/MenuContext';
 import Sidebar from '../components/sidebar';
 import Header from '../components/header';
 import { useSharedStyles } from '../sharedStyles';

@@ -4,9 +4,6 @@ import { useRouter } from 'next/navigation'; // Next.js router
 import {
   FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt, FaEdit, FaTrash, FaCheck, FaTimes,
 } from 'react-icons/fa'; // Icons from react-icons
-import { usePathname } from 'next/navigation';
-import { useSidebar } from '../../lib/SidebarContext';
-import { MenuContext } from '../lib/MenuContext';
 
 const ProductDetailsPage = () => {
     const router = useRouter();
