@@ -90,7 +90,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 
       try {
         // Verify token
-        const verifyRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify`, {
+        const verifyRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -101,8 +101,12 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
       } catch (error) {
         // Try to refresh token if verify fails
         try {
-          const refreshRes = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, {
+          const refreshRes = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
             refreshToken
+          }, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
           });
           
           localStorage.setItem('token', refreshRes.data.token);
@@ -126,7 +130,11 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
     const interval = setInterval(() => {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, { refreshToken })
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, { refreshToken }, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
           .then(res => {
             localStorage.setItem('token', res.data.token);
             dispatch(login({ token: res.data.token }));

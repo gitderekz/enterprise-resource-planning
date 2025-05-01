@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
-const WebSocketContext = createContext(null);
+export const WebSocketContext = createContext(null);
 
 export function WebSocketProvider({ children }) {
   const [socket, setSocket] = useState(null);

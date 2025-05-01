@@ -9,7 +9,11 @@ export const MenuProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchMenuItems = async () => {
-      const response = await axios.get('http://localhost:5000/api/menu');
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/menu`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
       console.log("response",response);
       
       setMenuItems(response.data);

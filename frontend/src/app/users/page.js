@@ -7,7 +7,11 @@ export default function Users() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const response = await axios.get('/api/users');
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
       setUsers(response.data);
     };
     fetchUsers();

@@ -2,11 +2,11 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { generatePdf } from '../utils/generatePdf';
-import { WebSocketContext } from '../lib/WebSocketContext';
+import { useWebSocket } from '../lib/WebSocketContext';
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
-  const { socket } = useContext(WebSocketContext);
+  const { socket, sendMessage } = useWebSocket();
 
   useEffect(() => {
     if (socket) {
@@ -16,17 +16,19 @@ export default function Tasks() {
     }
   }, [socket]);
 
-  const sendMessage = () => {
-    if (socket) {
-      socket.send('Hello from client!');
-    }
-  };
-
   useEffect(() => {
     const fetchTasks = async () => {
-      const response = await axios.get('/api/tasks');
-      setTasks(response.data);
-    };
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        setTasks(response.data);
+      } catch (error) {
+        console.error('Error fetching tasks:', error.response?.data || error.message);
+      }
+    };    
     fetchTasks();
   }, []);
 
@@ -43,7 +45,11 @@ export default function Tasks() {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Task Management</h1>
       <div>
-        <button onClick={sendMessage}>Send Message</button>
+        {/* <button onClick={() => sendMessage('Hello from client!')}>Send Message</button> */}
+        <button onClick={() => sendMessage({
+          type: 'NEW_TASK',
+          payload: { id: 1, name: 'My Task' }
+        })}>Send Message</button>
       </div>
       <button
         onClick={handleDownloadReport}

@@ -14,7 +14,11 @@
 //   const handleLogin = async (e) => {
 //     e.preventDefault();
 //     try {
-//       const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+//       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { email, password }, {
+        //   headers: {
+        //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        //   },
+        // });
 //       toast.success('Login successful!');
 //       localStorage.setItem('token', response.data.token);
 //       router.push('/dashboard');
@@ -78,7 +82,11 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { email, password }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
       
       const token = response.data.token;
       const user = response.data.user;
