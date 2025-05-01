@@ -1,4 +1,5 @@
-const Task = require('../models/Task');
+const db = require('../models');
+const Task = db.task; // use lowercase if model name is defined as 'user'
 
 // Get all tasks
 const getTasks = async (req, res) => {

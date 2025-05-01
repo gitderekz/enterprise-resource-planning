@@ -1,4 +1,5 @@
-const Language = require('../models/Language');
+const db = require('../models');
+const Language = db.language; // use lowercase if model name is defined as 'user'
 
 // Get all languages
 const getLanguages = async (req, res) => {

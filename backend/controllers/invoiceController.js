@@ -1,4 +1,5 @@
-const Invoice = require('../models/Invoice');
+const db = require('../models');
+const Invoice = db.invoice; // use lowercase if model name is defined as 'user'
 
 // Get all invoices
 const getInvoices = async (req, res) => {

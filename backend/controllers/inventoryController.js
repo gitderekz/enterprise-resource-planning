@@ -1,4 +1,5 @@
-const Inventory = require('../models/Inventory');
+const db = require('../models');
+const Inventory = db.inventory; // use lowercase if model name is defined as 'user'
 
 // Get all inventory items
 const getInventory = async (req, res) => {
