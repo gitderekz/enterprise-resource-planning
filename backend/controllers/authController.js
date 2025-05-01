@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 // const User = require('../models/User');
 const db = require('../models');
 const User = db.user; // use lowercase if model name is defined as 'user'
+const Role = db.role; // use lowercase if model name is defined as 'user'
 
 
 // Register a new user
@@ -38,9 +39,10 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ where: { email } });
-        console.log("user",user);
-        
+        const user = await User.findOne({
+            where: { email },
+            include: [{ model: Role, as: 'role' }]
+          });        
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(400).json({ message: 'Invalid credentials' });
@@ -62,6 +64,7 @@ const login = async (req, res) => {
               id: user.id,
               email: user.email,
               role_id: user.role_id,
+              role: user.role ? user.role.name : null,
               username: user.username
             }
           });

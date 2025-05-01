@@ -20,6 +20,7 @@ import Sidebar from '../../components/sidebar';
 import { useSharedStyles } from '../../sharedStyles';
 
 const Invoices = () => {
+  const { isSidebarVisible, toggleSidebar } = useSidebar();
   const styles = useSharedStyles();
   const products = [
     {

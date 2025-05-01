@@ -5,6 +5,7 @@ import {
   FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt, FaEdit, FaTrash, FaCheck, FaTimes,
 } from 'react-icons/fa'; // Icons from react-icons
 import { MenuContext } from '../../lib/MenuContext';
+import { useSidebar } from '../../lib/SidebarContext';
 import Sidebar from '@/app/components/sidebar';
 import Header from '@/app/components/header';
 
@@ -12,6 +13,7 @@ const ProductDetailsPage = () => {
     const router = useRouter();
     const pathName = usePathname();
     const params = useParams()
+    const { isSidebarVisible, toggleSidebar } = useSidebar();
 
     const { id } = params; // Get product ID from URL
 

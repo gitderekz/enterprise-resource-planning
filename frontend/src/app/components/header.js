@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { logout } from '../lib/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { ThemeContext } from '../lib/ThemeContext';
@@ -17,7 +17,17 @@ export default function Header() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [showPopup, setShowPopup] = useState(false);
-  
+  const [isVisible, setIsVisible] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [user, setUser] = useState(null);
+  const popupRef = useRef(null);
+  const toggleRef = useRef(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
   const handleLogout = () => {
     dispatch(logout()); // Uncomment if using Redux for logout
     localStorage.removeItem('token');
@@ -32,10 +42,44 @@ export default function Header() {
     boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
   };
 
+  
+  // Show immediately when toggled
+  useEffect(() => {
+    if (showPopup) {
+      setShouldRender(true);
+      requestAnimationFrame(() => setIsMounted(true)); // triggers transition after DOM paint
+    } else {
+      setIsMounted(false); // triggers slide-out
+      const timeout = setTimeout(() => setShouldRender(false), 300); // match transition duration
+      return () => clearTimeout(timeout);
+    }
+  }, [showPopup]);
+  // Close popup on outside click, excluding the toggle button
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target) &&
+        toggleRef.current &&
+        !toggleRef.current.contains(event.target)
+      ) {
+        setShowPopup(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
   return (
     <div style={headerStyles}>
       <div style={styles.headerLeft}>
         <div style={{ ...styles.logo, color: colors[theme].primary }}>enrep.sys</div>
+      </div>
+
+      <div style={styles.headerCenter}>
         <div style={{ 
           ...styles.searchBar, 
           backgroundColor: theme === 'dark' ? '#2d2d2d' : '#f5f6fa',
@@ -63,13 +107,22 @@ export default function Header() {
           style={{ ...styles.icon, color: colors[theme].primary }} 
           onClick={() => router.push('/settings')}
         />
-        <FaUserCircle
-          onClick={() => setShowPopup((prev) => !prev)}
-          style={{ ...styles.icon, color: colors[theme].primary, cursor: 'pointer' }}
-        />
-        {showPopup && (
-          <div style={{ 
+        <center style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ color: colors[theme].text, fontSize: '16px' }}>
+            {user?.username}
+          </span>
+          <FaUserCircle
+            ref={toggleRef}
+            onClick={() => setShowPopup((prev) => !prev)}
+            style={{ ...styles.icon, color: colors[theme].primary, cursor: 'pointer' }}
+          />
+        </center>
+        {shouldRender && (
+          <div 
+          ref={popupRef} 
+          style={{ 
             ...styles.popup,
+            ...(isMounted ? styles.popupVisible : {}),
             backgroundColor: colors[theme].cardBg,
             boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.5)' : '0 2px 8px rgba(0, 0, 0, 0.2)',
           }}>
@@ -128,6 +181,12 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '24px',
+    flex: 1, // takes up equal space
+  },
+  headerCenter: {
+    flex: 2, // makes it wider
+    display: 'flex',
+    justifyContent: 'center',
   },
   logo: {
     fontSize: '20px',
@@ -159,6 +218,8 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '20px',
+    flex: 1,
+    justifyContent: 'flex-end',
   },
   icon: {
     color: '#6A3CBC', // Purple icons
@@ -175,6 +236,15 @@ const styles = {
     zIndex: 100,
     minWidth: '120px',
     padding: '8px 0',
+    transform: 'translateX(20px)',
+    opacity: 0,
+    pointerEvents: 'none',
+    transition: 'transform 300ms ease, opacity 300ms ease',
+  },
+  popupVisible: {
+    transform: 'translateX(0)',
+    opacity: 1,
+    pointerEvents: 'auto',
   },
   popupItem: {
     display: 'block',
