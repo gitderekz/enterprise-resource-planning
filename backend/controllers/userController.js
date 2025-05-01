@@ -1,4 +1,6 @@
-const User = require('../models/User');
+const db = require('../models');
+const User = db.user; // use lowercase if model name is defined as 'user'
+
 
 // Get all users
 const getUsers = async (req, res) => {
