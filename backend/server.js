@@ -4,15 +4,14 @@ const cors = require('cors');
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
 const db = require('./models'); // Sequelize models
+const { NotificationService, notificationServiceInstance } = require('./services/notificationService');
 
 const app = express();
 
 // === CORS Setup ===
-// Adjust origin for your frontend URL
 const allowedOrigins = process.env.CLIENT_ORIGIN?.split(',') || ['http://localhost:3000'];
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
@@ -32,6 +31,7 @@ const inventoryRoutes = require('./routes/inventoryRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const languageRoutes = require('./routes/languageRoutes');
 const menuRoutes = require('./routes/menuRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // === Mount Routes ===
 app.use('/api/auth', authRoutes);
@@ -41,6 +41,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/languages', languageRoutes);
 app.use('/api/menu', menuRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // === Start HTTP Server ===
 const PORT = process.env.PORT || 5000;
@@ -51,6 +52,12 @@ const server = app.listen(PORT, () => {
 // === WebSocket Setup ===
 const wss = new WebSocket.Server({ server });
 
+// Initialize NotificationService with WebSocket server
+// NotificationService.wss = wss;
+// const notificationService = new NotificationService(wss);
+notificationServiceInstance.wss = wss; // This is the key change
+
+
 const verifyToken = (token) => {
   try {
     return jwt.verify(token, process.env.JWT_SECRET);
@@ -59,6 +66,9 @@ const verifyToken = (token) => {
     return null;
   }
 };
+
+// Track connected clients with user information
+const activeClients = new Map();
 
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
@@ -70,27 +80,58 @@ wss.on('connection', (ws, req) => {
     return;
   }
 
-  console.log('WebSocket client connected:', user.email || user.id);
+  // Attach user to the WebSocket connection
+  ws.user = user;
+  
+  // Store connection by user ID
+  activeClients.set(user.id, ws);
+  console.log(`Client connected: ${user.id}`);
 
-  ws.on('message', (message) => {
-    console.log('WebSocket message received:', message);
-
-    // Echo to all connected clients
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
+  ws.on('message', async (message) => {
+    try {
+      const { type, payload } = JSON.parse(message);
+      
+      if (['NEW_TASK', 'DELETE_TASK', 'info', 'task', 'alert', 'urgent'].includes(type)) {
+        const notificationData = {
+          userIds: payload.userIds || [user.id], // Include sender by default
+          type: payload.type || 'task',
+          title: payload.title || 'New Notification',
+          message: payload.message || 'You have a new notification',
+          link: payload.link || `/tasks/${payload.id || ''}`,
+          metadata: {
+            ...(payload.metadata || {}), // Preserve any existing metadata
+            senderId: user.id,
+            entityType: payload.type || 'task',
+            entityId: payload.id || null,
+            isFromWebSocket: true // Mark as WS notification
+          }
+        };
+  
+        console.log('Creating WS notification:', notificationData);
+        await notificationServiceInstance.createNotification(notificationData);
       }
-    });
+    } catch (err) {
+      console.error('Error processing message:', err);
+    }
   });
 
-  ws.on('close', () => console.log('WebSocket client disconnected'));
+  ws.on('close', () => {
+    if (ws.user) {
+      activeClients.delete(ws.user.id);
+      console.log(`Client disconnected: ${ws.user.id}`);
+    }
+  });
 });
 
 // === DB Setup ===
 db.sequelize.authenticate()
   .then(() => {
     console.log('Database connected');
-    return db.sequelize.sync({ alter: true }); // consider false in production
+    // return db.sequelize.sync({ alter: true }); // consider false in production
   })
   .then(() => console.log('Database synced'))
   .catch(err => console.error('Database connection error:', err));
+
+// Export for testing or other modules
+module.exports = { server, wss, notificationService: notificationServiceInstance, activeClients };
+// Close server gracefully on exit

@@ -1,5 +1,7 @@
 const db = require('../models');
 const Task = db.task; // use lowercase if model name is defined as 'user'
+const NotificationService = require('../services/notificationService');
+
 
 // Get all tasks
 const getTasks = async (req, res) => {
@@ -11,22 +13,50 @@ const getTasks = async (req, res) => {
     }
 };
 
-// Create a new task
-const createTask = async (req, res) => {
-    const { name, description, assigned_to, due_date } = req.body;
+// // Create a new task
+// const createTask = async (req, res) => {
+//     const { name, description, assigned_to, due_date } = req.body;
 
+//     try {
+//         const task = await Task.create({
+//             name,
+//             description,
+//             assigned_to,
+//             due_date,
+//         });
+//         res.status(201).json({ message: 'Task created successfully', task });
+//     } catch (err) {
+//         res.status(500).json({ message: 'Error creating task', error: err.message });
+//     }
+// };
+const createTask = async (req, res) => {
     try {
-        const task = await Task.create({
-            name,
-            description,
-            assigned_to,
-            due_date,
+      const task = await Task.create({
+        ...req.body,
+        createdBy: req.user.id
+      });
+  
+      // Send notification to userIds
+      if (req.body.userIds && req.body.userIds.length > 0) {
+        await NotificationService.createNotification({
+          userIds: req.body.userIds,
+          type: 'task',
+          title: 'New Task Assigned',
+          message: `You have been assigned to "${req.body.name}"`,
+          link: `/tasks/${task.id}`,
+          metadata: {
+            senderId: req.user.id,
+            entityType: 'task',
+            entityId: task.id
+          }
         });
-        res.status(201).json({ message: 'Task created successfully', task });
+      }
+  
+      res.status(201).json(task);
     } catch (err) {
-        res.status(500).json({ message: 'Error creating task', error: err.message });
+      res.status(400).json({ error: err.message });
     }
-};
+  };
 
 // Update a task
 const updateTask = async (req, res) => {

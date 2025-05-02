@@ -170,3 +170,127 @@ MOBILE
 flutter
 java - xml
 ReactNative
+
+
+
+userIds: ['1', '2', '3', '4', '5', '6', '7','8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'],
+
+Lets continue where we left from last chat where we developed "enterprise-resource-planning" with project structure
+[
+  enterprise-resource-management
+    -frontend
+      -src
+        -public
+          -locales
+            -en
+            -fr
+            -sw
+        -app
+          -layout.tsx
+          -page.tsx
+          -sharedstyles.js
+          -globals.css
+          -add-product
+            -page.js
+          -components
+            -page.js
+          -dashboard
+            -page.js
+          -finance
+            -finance/assessment
+              -page.js
+            -finance/cash-insights
+              -page.js
+            -finance/cis
+              -page.js
+            -finance/expenses
+              -page.js
+            -finance/income
+              -page.js
+            -finance/invoices
+              -page.js
+            -finance/receipts
+              -page.js
+            -finance/report
+              -page.js
+          -finances
+            -page.js
+          -hr
+            -administration
+              -page.js
+            -attendance
+              -page.js
+            -onboarding
+              -page.js
+            -payroll
+              -page.js
+            -performance
+              -page.js
+            -recruitment
+              -page.js
+            -timetabl
+              -page.js
+          -inventory
+            -page.js
+          -lib
+            -page.js
+          -login
+            -page.js
+          -pages
+            -page.js
+          -product-details
+            -[id]
+              -page.js
+              -ProductDetailsClient.js
+          -products
+            -page.js
+          -profile
+            -page.js
+          -settings
+            -page.js
+          -stores
+            -page.js
+          -tasks
+            -page.js
+          -types
+            -theme.ts
+          -users
+            -page.js
+          -utils
+            -generatePdf.js
+    -backend
+      -controllers
+      -middlewares
+      -models
+      -migrations
+      -routes
+      -seeders
+      -utils
+      server.js
+]
+
+I'm at the point where i want to test sending notification(both to single individual, few(2) and all users). So help me to structure it from timetable/page.js
+
+Here are some of the codes,
+backend/server.js
+
+
+backend/notificationRoute.js
+
+
+backend/model/notification.js
+
+
+backend/service/notificationService.js
+
+
+backend/taskController.js
+
+
+frontend/src/app/lib/websocketcontext.js
+
+
+frontend\src\app\hr\timetable\page.js
+
+
+frontend/src/app/hr/tasks/page.js

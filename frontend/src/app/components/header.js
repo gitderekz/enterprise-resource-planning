@@ -4,6 +4,7 @@ import { logout } from '../lib/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { ThemeContext } from '../lib/ThemeContext';
 import { useRouter } from 'next/navigation';
+import NotificationBell from "./NotificationBell";
 import {
   FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt,
   FaArrowRight
@@ -99,24 +100,24 @@ export default function Header() {
         </div>
       </div>
       <div style={styles.headerRight}>
-        <button onClick={toggleTheme} style={styles.themeToggle}>
+        <button onClick={toggleTheme} style={styles.themeToggle} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" >
           {theme === 'light' ? '🌙' : '☀️'}
         </button>
-        <FaCommentDots style={{ ...styles.icon, color: colors[theme].primary }} />
-        <FaBell style={{ ...styles.icon, color: colors[theme].primary }} />
-        <FaCog 
-          style={{ ...styles.icon, color: colors[theme].primary }} 
-          onClick={() => router.push('/settings')}
-        />
+        <button onClick={() => {}} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" >
+          <FaCommentDots style={{ ...styles.icon, color: colors[theme].primary }} />
+        </button>
+        {/* <FaBell style={{ ...styles.icon, color: colors[theme].primary }} /> */}
+        <NotificationBell  style={{ ...styles.icon, color: colors[theme].primary }} />
+        <button onClick={() => router.push('/settings')} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+          <FaCog style={{ ...styles.icon, color: colors[theme].primary }} />
+        </button>
         <center style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ color: colors[theme].text, fontSize: '16px' }}>
             {user?.username}
           </span>
-          <FaUserCircle
-            ref={toggleRef}
-            onClick={() => setShowPopup((prev) => !prev)}
-            style={{ ...styles.icon, color: colors[theme].primary, cursor: 'pointer' }}
-          />
+          <button ref={toggleRef} onClick={() => setShowPopup((prev) => !prev)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" >
+          <FaUserCircle style={{ ...styles.icon, color: colors[theme].primary, cursor: 'pointer' }} />
+          </button>
         </center>
         {shouldRender && (
           <div 
@@ -200,7 +201,7 @@ const styles = {
     backgroundColor: '#f5f6fa',
     borderRadius: '8px',
     padding: '8px 12px',
-    width: '300px',
+    // width: '300px',
     border: '1px solid #6A3CBC', // Purple border
   },
   searchIcon: {
@@ -219,7 +220,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '20px',
-    flex: 1,
+    // flex: 1,
     justifyContent: 'flex-end',
   },
   icon: {

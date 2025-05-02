@@ -113,13 +113,22 @@ export default function Sidebar() {
             .filter(item => (item.role_id === 0 || (user && item.role_id === user.role_id)) &&
               item.menu_item !== 'Add Product' && item.menu_item !== 'Log out'
             )
-            .filter(item => item.parent_id === null)
+            .filter(item => (item.parent_id === null || (item.parent_id !== null && (user?.role_id !== 1 && user?.role_id !== 2))))
             .map(parent => {
               const IconComponent = FaIcons[parent.icon] || FaIcons.FaQuestionCircle;
               const children = menuItems.filter(child => parseInt(child.parent_id) === parseInt(parent.id));
               const showNestedMenus = user?.role_id === 1 || user?.role_id === 2;
               const isExpanded = expandedMenus.includes(parent.id);
               const active = isActive(parent.link);
+              
+              // const IconComponent = FaIcons[parent.icon] || FaIcons.FaQuestionCircle;
+              // const children = 
+              // (user?.role_id === 1 || user?.role_id === 2)?
+              // menuItems.filter(child => parseInt(child.parent_id) === parseInt(parent.id))
+              // :[];
+              // const showNestedMenus = user?.role_id === 1 || user?.role_id === 2;
+              // const isExpanded = (expandedMenus.includes(parent.id) && (user?.role_id === 1 || user?.role_id === 2));
+              // const active = isActive(parent.link);
 
               return (
                 <li key={parent.id}>

@@ -1,12 +1,31 @@
-'use client'; // Mark as a Client Component
-import { useState, useEffect, useContext } from 'react';
+'use client'; 
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { generatePdf } from '../utils/generatePdf';
 import { useWebSocket } from '../lib/WebSocketContext';
+import {
+  FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt,
+} from 'react-icons/fa'; // Icons from react-icons
+import { usePathname } from 'next/navigation';
+import { useSidebar } from '../lib/SidebarContext';
+import { MenuContext } from '../lib/MenuContext';
+import Header from '../components/header';
+import Sidebar from '../components/sidebar';
+import { useSharedStyles } from '../sharedStyles';
 
-export default function Tasks() {
+const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const { socket, sendMessage } = useWebSocket();
+  
+  const styles = useSharedStyles();
+  const pathname = usePathname();
+  const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible, toggleSidebar } = useSidebar();
+
+  // Find the matching menu item
+  const currentMenuItem = menuItems.find(item => item.link === pathname);
+  const pageTitle = currentMenuItem?.link || currentMenuItem?.menu_item || 'Untitled Page';
+
 
   useEffect(() => {
     if (socket) {
@@ -18,17 +37,13 @@ export default function Tasks() {
 
   useEffect(() => {
     const fetchTasks = async () => {
-      try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        setTasks(response.data);
-      } catch (error) {
-        console.error('Error fetching tasks:', error.response?.data || error.message);
-      }
-    };    
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      setTasks(response.data);
+    };
     fetchTasks();
   }, []);
 
@@ -41,40 +56,90 @@ export default function Tasks() {
     link.click();
   };
 
+  const handleCreateTask = () => {
+    const newTask = {
+      id: Date.now(),
+      name: `Task ${Math.floor(Math.random() * 100)}`,
+      status: 'Pending',
+      due_date: new Date().toLocaleDateString()
+    };
+
+    // Send to server via WebSocket
+    sendMessage({
+      type: 'NEW_TASK',
+      payload: newTask
+    });
+
+    // Update local state
+    setTasks(prev => [...prev, newTask]);
+  };
+  const handleDeleteTask = (taskId) => {
+    // Send to server via WebSocket
+    sendMessage({
+      type: 'DELETE_TASK',
+      payload: { id: taskId }
+    });
+
+    // Update local state
+    setTasks(prev => prev.filter(task => task.id !== taskId));
+  }
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Task Management</h1>
-      <div>
-        {/* <button onClick={() => sendMessage('Hello from client!')}>Send Message</button> */}
-        <button onClick={() => sendMessage({
-          type: 'NEW_TASK',
-          payload: { id: 1, name: 'My Task' }
-        })}>Send Message</button>
+    <div style={styles.container}>
+      {/* Header */}
+      <Header />
+
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        {/* Sidebar */}
+        <Sidebar />
+
+        {/* Scrollable Content */}
+        {/* <div style={styles.content}> */}
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
+          <h1 style={styles.pageTitle}>{pageTitle}</h1>
+
+          {/* TODO */}
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-6">Task Management</h1>
+            <div>
+              {/* <button onClick={() => sendMessage('Hello from client!')}>Send Message</button> */}
+              {/* <button onClick={handleCreateTask}>Send Message</button> */}
+            </div>
+            <button
+              onClick={handleDownloadReport}
+              className="bg-blue-500 text-white p-2 rounded mb-4"
+            >
+              Download Task Report
+            </button>
+            <table className="w-full bg-white rounded-lg shadow-md">
+              <thead>
+                <tr>
+                  <th className="p-4">Task Name</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4">Due Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.map((task) => (
+                  <tr key={task.id}>
+                    <td className="p-4">{task.name}</td>
+                    <td className="p-4">{task.status}</td>
+                    <td className="p-4">{task.due_date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
       </div>
-      <button
-        onClick={handleDownloadReport}
-        className="bg-blue-500 text-white p-2 rounded mb-4"
-      >
-        Download Task Report
-      </button>
-      <table className="w-full bg-white rounded-lg shadow-md">
-        <thead>
-          <tr>
-            <th className="p-4">Task Name</th>
-            <th className="p-4">Status</th>
-            <th className="p-4">Due Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.map((task) => (
-            <tr key={task.id}>
-              <td className="p-4">{task.name}</td>
-              <td className="p-4">{task.status}</td>
-              <td className="p-4">{task.due_date}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
-}
+};
+
+export default Tasks;
