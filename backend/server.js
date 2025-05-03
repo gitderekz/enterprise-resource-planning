@@ -71,7 +71,7 @@ const verifyToken = (token) => {
 const activeClients = new Map();
 
 wss.on('connection', (ws, req) => {
-  const url = new URL(req.url, `${process.env.SOCKET_PROTOCAL}://${req.headers.host}`);
+  const url = new URL(req.url, `${process.env.SOCKET_PROTOCOL}://${req.headers.host}`);
   const token = url.searchParams.get('token');
 
   const user = verifyToken(token);
