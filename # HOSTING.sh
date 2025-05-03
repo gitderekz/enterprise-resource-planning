@@ -10,6 +10,20 @@ pm2 stop enterprise-resource-planning
 # BACKEND
 cd project/backend
 nano /etc/nginx/sites-available/enterprise-resource-planning-api.gexperten.tech.conf
+
+# KAMA KIUNGANISHI NI KIMOJA KATIKA BACKEND
+# location / {
+#     proxy_pass http://localhost:3004;
+#     proxy_http_version 1.1;                     # ✅ needed for WebSocket
+#     proxy_set_header Upgrade $http_upgrade;     # ✅ needed for WebSocket
+#     proxy_set_header Connection "upgrade";      # ✅ needed for WebSocket
+#     proxy_set_header Host $host;
+#     proxy_set_header X-Real-IP $remote_addr;
+#     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#     proxy_set_header X-Forwarded-Proto $scheme;
+# }
+
+
 server {
     listen 80;
     server_name enterprise-resource-planning-api.gexperten.tech;

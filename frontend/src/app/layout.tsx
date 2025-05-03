@@ -216,22 +216,18 @@ function AuthWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Now it should be accurate
   const [loading, setLoading] = useState(true);
   const hasRedirectedRef = useRef(false);
 
-  useEffect(() => { 
-    console.log('1');
+  useEffect(() => {
     const verifyAuth = async () => {
       const token = localStorage.getItem('token');
       const refreshToken = localStorage.getItem('refreshToken');
 
-      // if (!token && pathname !== '/login') {
       if (!isAuthenticated && pathname !== '/login') {
-        console.log('2');
         setLoading(false);
         if (!hasRedirectedRef.current) {
-          console.log('Redirecting to login due to missing token');
           hasRedirectedRef.current = true;
           router.push('/login');
         }
@@ -239,7 +235,6 @@ function AuthWrapper({ children }: { children: ReactNode }) {
       }
 
       try {
-        console.log('3');
         const verifyRes = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/verify`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -247,7 +242,6 @@ function AuthWrapper({ children }: { children: ReactNode }) {
 
         dispatch(login({ token, user: verifyRes.data.user }));
       } catch (error) {
-        console.log('4');
         try {
           const refreshRes = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
@@ -255,23 +249,18 @@ function AuthWrapper({ children }: { children: ReactNode }) {
             { headers: { Authorization: `Bearer ${token}` } }
           );
 
-          console.log('5');
           localStorage.setItem('token', refreshRes.data.token);
           dispatch(login({ token: refreshRes.data.token, user: refreshRes.data.user }));
         } catch (refreshError) {
-          console.log('6');
-          console.log('Redirecting to login due to failed refresh');
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
           if (!hasRedirectedRef.current) {
-            console.log('7');
             hasRedirectedRef.current = true;
             setLoading(false);
             router.push('/login');
           }
         }
       } finally {
-        console.log('8');
         setLoading(false);
       }
     };
@@ -303,14 +292,14 @@ function AuthWrapper({ children }: { children: ReactNode }) {
     }, 15 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [dispatch, router, pathname]);
+  }, [dispatch, router, pathname, isAuthenticated]); // Add isAuthenticated to dependency array
 
-  console.log('MWISHO');
   if (loading) return <LoadingSpinner />;
   if (!isAuthenticated && pathname !== '/login') return <p>Redirecting to login...</p>;
 
   return <>{children}</>;
 }
+
 // ******************************
 
 // function AuthWrapper({ children }: { children: React.ReactNode }) {
