@@ -37,26 +37,30 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className={inter.className}>
         <Provider store={store}>
-          <WebSocketProvider>
-            <I18nextProvider i18n={i18n}>
-              <ThemeProvider>
-                <MenuProvider>
-                  <SidebarProvider>
-                    {isAuthRoute ? (
-                      children
-                    ) : (
-                      <AuthWrapper>{children}</AuthWrapper>
-                    )}
-                    <ToastContainer />
-                  </SidebarProvider>
-                </MenuProvider>
-              </ThemeProvider>
-            </I18nextProvider>
-          </WebSocketProvider>
+          <I18nextProvider i18n={i18n}>
+            <ThemeProvider>
+              <ToastContainer />
+              {isAuthRoute ? (
+                children
+              ) : (
+                <AuthWrapper>
+                  {/* Only include providers if authenticated */}
+                  <WebSocketProvider>
+                    <MenuProvider>
+                      <SidebarProvider>
+                        {children}
+                      </SidebarProvider>
+                    </MenuProvider>
+                  </WebSocketProvider>
+                </AuthWrapper>
+              )}
+            </ThemeProvider>
+          </I18nextProvider>
         </Provider>
       </body>
     </html>
   );
+  
 }
 
 function AuthWrapper({ children }: { children: ReactNode }) {
