@@ -309,6 +309,8 @@ function AuthWrapper({ children }: { children: ReactNode }) {
   const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
+    console.log('aithenticated:', isAuthenticated);
+    
     if (typeof window !== 'undefined') {
       // Code that accesses localStorage should run only on the client side
       const token = localStorage.getItem('token');

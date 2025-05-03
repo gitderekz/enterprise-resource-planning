@@ -4,7 +4,7 @@ import { useWebSocket } from '../lib/WebSocketContext';
 import { FaBell, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 
-export default function NotificationBell() {
+export default function NotificationBell({style}) {
   const { 
     notifications, 
     unreadCount, 
@@ -49,7 +49,7 @@ export default function NotificationBell() {
           onClick={() => setIsOpen(!isOpen)}
           className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 relative"
         >
-          <FaBell className="text-lg" />
+          <FaBell className="text-lg" style={style}/>
           {unreadCount > 0 && (
             <span className={`absolute top-0 right-0 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center
     ${unreadCount > 19 ? 'text-[0.6rem]' : 'text-xs'}`}>
