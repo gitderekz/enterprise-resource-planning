@@ -28,7 +28,8 @@ const inter = Inter({ subsets: ['latin'] });
 export default function RootLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const authRoutes = ['/login', '/register', '/forgot-password'];
-  const isAuthRoute = authRoutes.some(route => pathname?.startsWith(route));
+  // const isAuthRoute = authRoutes.some(route => pathname?.startsWith(route));
+  const isAuthRoute = authRoutes.includes(pathname); // Use `includes`, not `startsWith`
 
   return (
     <html lang="en">
@@ -139,7 +140,6 @@ function AuthWrapper({ children }: { children: ReactNode }) {
     </WebSocketProvider>
   );
 }
-
 // ***********************************************
 
 
