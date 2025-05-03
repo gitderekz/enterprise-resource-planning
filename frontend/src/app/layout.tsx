@@ -92,6 +92,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
           hasRedirectedRef.current = true;
           router.push('/login');
         }
+        setLoading(false);
         return;
       }
 
@@ -153,10 +154,10 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
     }, 15 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [dispatch, router]);
+  }, [dispatch, router, pathname]);
 
   if (loading) return <LoadingSpinner />;
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated && pathname !== '/login') return <p>Redirecting to login...</p>;
 
   return <>{children}</>;
 }
