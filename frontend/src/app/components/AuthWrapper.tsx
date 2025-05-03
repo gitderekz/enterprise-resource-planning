@@ -8,6 +8,10 @@ import { login } from '../lib/authSlice';
 import LoadingSpinner from './LoadingSpinner';
 import type { RootState } from '../lib/store';
 
+import { WebSocketProvider } from '../lib/WebSocketContext';
+import { MenuProvider } from '../lib/MenuContext';
+import { SidebarProvider } from '../lib/SidebarContext';
+
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -19,10 +23,12 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const authRoutes = ['/login', '/register', '/forgot-password'];
   const isAuthRoute = authRoutes.includes(pathname || '');
 
-  // ✅ Skip auth logic entirely on auth routes
-  if (isAuthRoute) return <>{children}</>;
-
   useEffect(() => {
+    if (isAuthRoute) {
+      setLoading(false); // ✅ Don’t auth-check on auth routes
+      return;
+    }
+
     const verifyAuth = async () => {
       const token = localStorage.getItem('token');
       const refreshToken = localStorage.getItem('refreshToken');
@@ -65,34 +71,21 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     };
 
     verifyAuth();
-
-    const interval = setInterval(() => {
-      const refreshToken = localStorage.getItem('refreshToken');
-      const token = localStorage.getItem('token');
-
-      if (refreshToken && token) {
-        axios
-          .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, { refreshToken }, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-          .then(res => {
-            localStorage.setItem('token', res.data.token);
-            dispatch(login({ token: res.data.token, user: res.data.user }));
-          })
-          .catch(() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            if (!hasRedirectedRef.current) {
-              hasRedirectedRef.current = true;
-              router.push('/login');
-            }
-          });
-      }
-    }, 15 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [dispatch, router]);
+  }, [dispatch, router, pathname, isAuthRoute]);
 
   if (loading) return <LoadingSpinner />;
-  return <>{children}</>;
+
+  // ✅ For auth routes, don't include protected providers
+  if (isAuthRoute) return <>{children}</>;
+
+  // ✅ Wrap protected content with providers
+  return (
+    <WebSocketProvider>
+      <MenuProvider>
+        <SidebarProvider>
+          {children}
+        </SidebarProvider>
+      </MenuProvider>
+    </WebSocketProvider>
+  );
 }
