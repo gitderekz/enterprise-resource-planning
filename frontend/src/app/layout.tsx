@@ -151,7 +151,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
   }, [dispatch, router]);
 
   if (loading) return <LoadingSpinner />;
-  if (!isAuthenticated) return null;
+  // if (!isAuthenticated) return null;
 
   return <>{children}</>;
 }

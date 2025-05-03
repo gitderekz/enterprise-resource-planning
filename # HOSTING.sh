@@ -1,3 +1,12 @@
+ssh root@89.117.36.40
+cd /var/www/enterprise-resource-planning
+badilisha
+NEXT_PUBLIC_WS_URL=ws://enterprise-resource-planning.tech
+NEXT_PUBLIC_WS_URL=wss://enterprise-resource-planning.tech
+SOCKET_PROTOCAL=http
+SOCKET_PROTOCAL=https
+
+
 # BACKEND
 cd project/backend
 nano /etc/nginx/sites-available/enterprise-resource-planning-api.gexperten.tech.conf

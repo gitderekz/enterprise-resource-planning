@@ -82,11 +82,7 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { email, password }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { email, password });
       
       const token = response.data.token;
       const user = response.data.user;
@@ -96,7 +92,7 @@ const LoginPage = () => {
       localStorage.setItem('user', JSON.stringify(user));
 
       // Dispatch login action to Redux
-      dispatch(login({ token }));
+      dispatch(login({ token, user }));
 
       toast.success('Login successful!');
       router.push('/dashboard');
