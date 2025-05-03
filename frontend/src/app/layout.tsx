@@ -171,7 +171,7 @@ const inter = Inter({ subsets: ['latin'] });
 export default function RootLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   // const dispatch = useDispatch();
-  // const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
 
   // Check if current route is auth route
   const authRoutes = ['/login', '/register', '/forgot-password']; // Expandable
@@ -185,7 +185,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <I18nextProvider i18n={i18n}>
             <ThemeProvider>
               <ToastContainer />
-              {isAuthRoute ? (
+              {isAuthRoute && !isAuthenticated ? (
                 children
               ) : (
                 <AuthWrapper>
