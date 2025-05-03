@@ -113,11 +113,14 @@ export function WebSocketProvider({ children }) {
 
   const connectWebSocket = useCallback(() => {
     const token = localStorage.getItem('token');
-    if (!token) return;
-
+    if (!token) {
+      console.warn('No token found. Skipping WebSocket connection.');
+      return null;
+    }
+  
     const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL}?token=${token}`;
     const ws = new WebSocket(wsUrl);
-
+  
     ws.onopen = () => {
       console.log('WebSocket Connected');
       setSocket(ws);
@@ -126,26 +129,34 @@ export function WebSocketProvider({ children }) {
       }).then(res => {
         setNotifications(res.data);
         setUnreadCount(res.data.filter(n => !n.isRead).length);
+      }).catch(err => {
+        console.warn('Notification fetch failed on WS open:', err);
       });
     };
-
+  
     ws.onmessage = (event) => {
-      const { type, payload } = JSON.parse(event.data);      
+      const { type, payload } = JSON.parse(event.data);
       if (type === 'NOTIFICATION') {
         setNotifications(prev => [payload, ...prev]);
         setUnreadCount(prev => prev + 1);
-        // Pass the entire notification payload to playSound
         playSound(payload);
       }
     };
-
-    ws.onclose = () => {
-      console.log('WebSocket Disconnected');
-      setTimeout(() => connectWebSocket(), 5000);
+  
+    ws.onclose = (event) => {
+      console.warn('WebSocket Disconnected:', event.reason);
+      setSocket(null);
+      setTimeout(() => connectWebSocket(), 5000); // reconnect delay
     };
-
+  
+    ws.onerror = (err) => {
+      console.error('WebSocket Error:', err.message);
+      ws.close(); // force disconnect to prevent flooding
+    };
+  
     return ws;
   }, [playSound]);
+  
 
   useEffect(() => {
     const ws = connectWebSocket();

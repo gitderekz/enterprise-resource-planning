@@ -5,7 +5,7 @@ NEXT_PUBLIC_WS_URL=ws://enterprise-resource-planning.tech
 NEXT_PUBLIC_WS_URL=wss://enterprise-resource-planning.tech
 SOCKET_PROTOCAL=http
 SOCKET_PROTOCAL=https
-
+pm2 stop enterprise-resource-planning
 
 # BACKEND
 cd project/backend

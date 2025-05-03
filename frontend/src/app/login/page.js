@@ -98,7 +98,7 @@ const LoginPage = () => {
       router.push('/dashboard');
     } catch (error) {
       toast.error('Login failed!');
-      console.error('Login failed:', error);
+      console.error('Login failed:', error?.response?.data || error.message || error);
     }
   };
 
@@ -128,7 +128,7 @@ const LoginPage = () => {
             style={styles.input}
           />
         </div>
-        <button type="submit" style={styles.button}>{t('login')}</button>
+        <button type="submit" style={styles.button} aria-label="Login">{t('login')}</button>
       </form>
     </div>
   );

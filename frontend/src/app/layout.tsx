@@ -11,7 +11,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { WebSocketProvider } from './lib/WebSocketContext';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { RootState } from './lib/store'; // adjust path as needed
 import { SidebarProvider } from './lib/SidebarContext';
@@ -77,6 +77,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(true);
+  const hasRedirectedRef = useRef(false); // 🆕
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -84,40 +85,39 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
       const refreshToken = localStorage.getItem('refreshToken');
 
       if (!token) {
-        router.push('/login');
+        if (!hasRedirectedRef.current) {
+          console.log('Redirecting to login due to missing token');
+          hasRedirectedRef.current = true;
+          router.push('/login');
+        }
         return;
       }
 
       try {
-        // Verify token
-        const verifyRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        dispatch(login({ 
-          token,
-          user: verifyRes.data.user 
-        }));
+        const verifyRes = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/verify`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        dispatch(login({ token, user: verifyRes.data.user }));
       } catch (error) {
-        // Try to refresh token if verify fails
         try {
-          const refreshRes = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
-            refreshToken
-          }, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          
+          const refreshRes = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+            { refreshToken },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
           localStorage.setItem('token', refreshRes.data.token);
-          dispatch(login({
-            token: refreshRes.data.token,
-            user: refreshRes.data.user
-          }));
+          dispatch(login({ token: refreshRes.data.token, user: refreshRes.data.user }));
         } catch (refreshError) {
+          console.log('Redirecting to login due to failed refresh');
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
-          router.push('/login');
+          if (!hasRedirectedRef.current) {
+            hasRedirectedRef.current = true;
+            router.push('/login');
+          }
         }
       } finally {
         setLoading(false);
@@ -126,32 +126,35 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 
     verifyAuth();
 
-    // Set up token refresh interval (every 15 minutes)
     const interval = setInterval(() => {
       const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, { refreshToken }, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-          .then(res => {
-            localStorage.setItem('token', res.data.token);
-            dispatch(login({ token: res.data.token }));
-          })
-          .catch(() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            router.push('/login');
-          });
-      }
+      if (!refreshToken) return;
+
+      const token = localStorage.getItem('token');
+      axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+        { refreshToken },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then(res => {
+        localStorage.setItem('token', res.data.token);
+        dispatch(login({ token: res.data.token }));
+      })
+      .catch(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        if (!hasRedirectedRef.current) {
+          hasRedirectedRef.current = true;
+          router.push('/login');
+        }
+      });
     }, 15 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [dispatch, router]);
 
   if (loading) return <LoadingSpinner />;
-  // if (!isAuthenticated) return null;
+  if (!isAuthenticated) return null;
 
   return <>{children}</>;
 }
