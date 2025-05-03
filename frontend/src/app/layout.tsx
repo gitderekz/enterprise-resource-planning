@@ -19,15 +19,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { login } from './lib/authSlice'; // adjust to your actual path
 import LoadingSpinner from './components/LoadingSpinner'; // adjust to your actual path
-import { useSharedStyles } from './sharedStyles';
 import { ReactNode } from 'react';
-const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
-
+// Functional component should call useSelector inside it
 const inter = Inter({ subsets: ['latin'] });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
 
   // Check if current route is auth route
   const authRoutes = ['/login', '/register', '/forgot-password']; // Expandable
@@ -63,7 +63,7 @@ function AuthWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
   const [loading, setLoading] = useState(true);
   const hasRedirectedRef = useRef(false);
 
@@ -147,6 +147,7 @@ function AuthWrapper({ children }: { children: ReactNode }) {
 
   return <>{children}</>;
 }
+
 
 
 
