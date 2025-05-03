@@ -56,23 +56,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }
 
-// function AuthWrapper({ children }: { children: React.ReactNode }) {
-//   const router = useRouter();
-//   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-
-//   useEffect(() => {
-//     if (!isAuthenticated) {
-//       router.push('/login');
-//     }
-//   }, [isAuthenticated, router]);
-
-//   if (!isAuthenticated) {
-//     return null; // or a loading spinner
-//   }
-
-//   return <>{children}</>;
-// }
-
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -87,12 +70,12 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
       const refreshToken = localStorage.getItem('refreshToken');
 
       if (!token && pathname !== '/login') {
+        setLoading(false);
         if (!hasRedirectedRef.current) {
           console.log('Redirecting to login due to missing token');
           hasRedirectedRef.current = true;
           router.push('/login');
         }
-        setLoading(false);
         return;
       }
 
@@ -141,7 +124,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
       )
       .then(res => {
         localStorage.setItem('token', res.data.token);
-        dispatch(login({ token: res.data.token }));
+        dispatch(login({ token: res.data.token, user: res.data.user }));
       })
       .catch(() => {
         localStorage.removeItem('token');
@@ -163,6 +146,23 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 }
 
 
+
+// function AuthWrapper({ children }: { children: React.ReactNode }) {
+//   const router = useRouter();
+//   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+//   useEffect(() => {
+//     if (!isAuthenticated) {
+//       router.push('/login');
+//     }
+//   }, [isAuthenticated, router]);
+
+//   if (!isAuthenticated) {
+//     return null; // or a loading spinner
+//   }
+
+//   return <>{children}</>;
+// }
 
 
 
