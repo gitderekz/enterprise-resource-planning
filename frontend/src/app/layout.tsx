@@ -212,16 +212,105 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   
 }
 
+// function AuthWrapper({ children }: { children: ReactNode }) {
+//   const pathname = usePathname();
+//   const router = useRouter();
+//   const dispatch = useDispatch();
+//   const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Now it should be accurate
+//   const [loading, setLoading] = useState(true);
+//   const hasRedirectedRef = useRef(false);
+
+//   useEffect(() => {
+//     const verifyAuth = async () => {
+//       const token = localStorage.getItem('token');
+//       const refreshToken = localStorage.getItem('refreshToken');
+
+//       if (!isAuthenticated && pathname !== '/login') {
+//         setLoading(false);
+//         if (!hasRedirectedRef.current) {
+//           hasRedirectedRef.current = true;
+//           router.push('/login');
+//         }
+//         return;
+//       }
+
+//       try {
+//         const verifyRes = await axios.get(
+//           `${process.env.NEXT_PUBLIC_API_URL}/auth/verify`,
+//           { headers: { Authorization: `Bearer ${token}` } }
+//         );
+
+//         dispatch(login({ token, user: verifyRes.data.user }));
+//       } catch (error) {
+//         try {
+//           const refreshRes = await axios.post(
+//             `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+//             { refreshToken },
+//             { headers: { Authorization: `Bearer ${token}` } }
+//           );
+
+//           localStorage.setItem('token', refreshRes.data.token);
+//           dispatch(login({ token: refreshRes.data.token, user: refreshRes.data.user }));
+//         } catch (refreshError) {
+//           localStorage.removeItem('token');
+//           localStorage.removeItem('refreshToken');
+//           if (!hasRedirectedRef.current) {
+//             hasRedirectedRef.current = true;
+//             setLoading(false);
+//             router.push('/login');
+//           }
+//         }
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     verifyAuth();
+
+//     const interval = setInterval(() => {
+//       const refreshToken = localStorage.getItem('refreshToken');
+//       if (!refreshToken) return;
+
+//       const token = localStorage.getItem('token');
+//       axios.post(
+//         `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+//         { refreshToken },
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       )
+//       .then(res => {
+//         localStorage.setItem('token', res.data.token);
+//         dispatch(login({ token: res.data.token, user: res.data.user }));
+//       })
+//       .catch(() => {
+//         localStorage.removeItem('token');
+//         localStorage.removeItem('refreshToken');
+//         if (!hasRedirectedRef.current) {
+//           hasRedirectedRef.current = true;
+//           router.push('/login');
+//         }
+//       });
+//     }, 15 * 60 * 1000);
+
+//     return () => clearInterval(interval);
+//   }, [dispatch, router, pathname, isAuthenticated]); // Add isAuthenticated to dependency array
+
+//   if (loading) return <LoadingSpinner />;
+//   if (!isAuthenticated && pathname !== '/login') return <p>Redirecting to login...</p>;
+
+//   return <>{children}</>;
+// }
+
 function AuthWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Now it should be accurate
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(true);
   const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
-    const verifyAuth = async () => {
+    if (typeof window !== 'undefined') {
+      // Code that accesses localStorage should run only on the client side
       const token = localStorage.getItem('token');
       const refreshToken = localStorage.getItem('refreshToken');
 
@@ -234,71 +323,74 @@ function AuthWrapper({ children }: { children: ReactNode }) {
         return;
       }
 
-      try {
-        const verifyRes = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/verify`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        dispatch(login({ token, user: verifyRes.data.user }));
-      } catch (error) {
+      const verifyAuth = async () => {
         try {
-          const refreshRes = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-            { refreshToken },
+          const verifyRes = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/verify`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
 
-          localStorage.setItem('token', refreshRes.data.token);
-          dispatch(login({ token: refreshRes.data.token, user: refreshRes.data.user }));
-        } catch (refreshError) {
+          dispatch(login({ token, user: verifyRes.data.user }));
+        } catch (error) {
+          try {
+            const refreshRes = await axios.post(
+              `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+              { refreshToken },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            localStorage.setItem('token', refreshRes.data.token);
+            dispatch(login({ token: refreshRes.data.token, user: refreshRes.data.user }));
+          } catch (refreshError) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            if (!hasRedirectedRef.current) {
+              hasRedirectedRef.current = true;
+              setLoading(false);
+              router.push('/login');
+            }
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      verifyAuth();
+
+      const interval = setInterval(() => {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) return;
+
+        const token = localStorage.getItem('token');
+        axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+          { refreshToken },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+        .then(res => {
+          localStorage.setItem('token', res.data.token);
+          dispatch(login({ token: res.data.token, user: res.data.user }));
+        })
+        .catch(() => {
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
           if (!hasRedirectedRef.current) {
             hasRedirectedRef.current = true;
-            setLoading(false);
             router.push('/login');
           }
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+        });
+      }, 15 * 60 * 1000);
 
-    verifyAuth();
-
-    const interval = setInterval(() => {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (!refreshToken) return;
-
-      const token = localStorage.getItem('token');
-      axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-        { refreshToken },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      .then(res => {
-        localStorage.setItem('token', res.data.token);
-        dispatch(login({ token: res.data.token, user: res.data.user }));
-      })
-      .catch(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        if (!hasRedirectedRef.current) {
-          hasRedirectedRef.current = true;
-          router.push('/login');
-        }
-      });
-    }, 15 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [dispatch, router, pathname, isAuthenticated]); // Add isAuthenticated to dependency array
+      return () => clearInterval(interval);
+    }
+  }, [dispatch, router, pathname, isAuthenticated]);
 
   if (loading) return <LoadingSpinner />;
   if (!isAuthenticated && pathname !== '/login') return <p>Redirecting to login...</p>;
 
   return <>{children}</>;
 }
+
 
 // ******************************
 
