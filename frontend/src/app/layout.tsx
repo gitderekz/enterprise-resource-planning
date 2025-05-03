@@ -152,6 +152,7 @@ function AuthWrapper({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [dispatch, router, pathname]);
 
+  console.log('MWISHO');
   if (loading) return <LoadingSpinner />;
   if (!isAuthenticated && pathname !== '/login') return <p>Redirecting to login...</p>;
 
