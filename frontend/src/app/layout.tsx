@@ -1,6 +1,5 @@
 'use client';
 import { Provider } from 'react-redux';
-import store from './lib/store';
 import './globals.css';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './lib/ThemeContext';
@@ -13,13 +12,17 @@ import { WebSocketProvider } from './lib/WebSocketContext';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import type { RootState } from './lib/store'; // adjust path as needed
+import store from './lib/store'; // Correct path import for store
+import type { RootState } from './lib/store'; // For type support
 import { SidebarProvider } from './lib/SidebarContext';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { login } from './lib/authSlice'; // adjust to your actual path
 import LoadingSpinner from './components/LoadingSpinner'; // adjust to your actual path
 import { useSharedStyles } from './sharedStyles';
+import { ReactNode } from 'react';
+const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -56,13 +59,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }
 
-function AuthWrapper({ children }: { children: React.ReactNode }) {
+function AuthWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(true);
-  const hasRedirectedRef = useRef(false); // 🆕
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -144,6 +147,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+
 
 
 

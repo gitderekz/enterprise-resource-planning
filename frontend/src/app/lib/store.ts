@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './authSlice'; // adjust to your actual path
+import authReducer from './authSlice'; // ✅ adjust path if needed
 
 const store = configureStore({
   reducer: {
@@ -8,7 +8,6 @@ const store = configureStore({
   },
 });
 
-export type RootState = ReturnType<typeof store.getState>; // 👈 Export RootState
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-
 export default store;
