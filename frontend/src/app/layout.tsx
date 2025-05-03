@@ -21,15 +21,12 @@ import { login } from './lib/authSlice'; // adjust to your actual path
 import LoadingSpinner from './components/LoadingSpinner'; // adjust to your actual path
 import { ReactNode } from 'react';
 
-// Functional component should call useSelector inside it
 const inter = Inter({ subsets: ['latin'] });
-
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const authRoutes = ['/login', '/register', '/forgot-password'];
-  // const isAuthRoute = authRoutes.some(route => pathname?.startsWith(route));
-  const isAuthRoute = authRoutes.includes(pathname); // Use `includes`, not `startsWith`
+  const isAuthRoute = authRoutes.includes(pathname);
 
   return (
     <html lang="en">
@@ -39,9 +36,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <ThemeProvider>
               <ToastContainer />
               {isAuthRoute ? (
-                children // Just render login/register/forgot
+                children
               ) : (
-                <AuthWrapper>{children}</AuthWrapper> // Auth-protected routes
+                <AuthWrapper>{children}</AuthWrapper>
               )}
             </ThemeProvider>
           </I18nextProvider>
@@ -60,16 +57,21 @@ function AuthWrapper({ children }: { children: ReactNode }) {
   const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
+    if (pathname === '/login') {
+      setLoading(false);
+      return;
+    }
+
     const verifyAuth = async () => {
       const token = localStorage.getItem('token');
       const refreshToken = localStorage.getItem('refreshToken');
 
-      if (!token && pathname !== '/login') {
+      if (!isAuthenticated && pathname !== '/login') {
+        setLoading(false);
         if (!hasRedirectedRef.current) {
           hasRedirectedRef.current = true;
           router.push('/login');
         }
-        setLoading(false);
         return;
       }
 
@@ -78,17 +80,19 @@ function AuthWrapper({ children }: { children: ReactNode }) {
           `${process.env.NEXT_PUBLIC_API_URL}/auth/verify`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
         dispatch(login({ token, user: verifyRes.data.user }));
-      } catch {
+      } catch (error) {
         try {
           const refreshRes = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
             { refreshToken },
             { headers: { Authorization: `Bearer ${token}` } }
           );
+
           localStorage.setItem('token', refreshRes.data.token);
           dispatch(login({ token: refreshRes.data.token, user: refreshRes.data.user }));
-        } catch {
+        } catch (refreshError) {
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
           if (!hasRedirectedRef.current) {
@@ -105,41 +109,37 @@ function AuthWrapper({ children }: { children: ReactNode }) {
 
     const interval = setInterval(() => {
       const refreshToken = localStorage.getItem('refreshToken');
-      const token = localStorage.getItem('token');
-      if (!refreshToken || !token) return;
+      if (!refreshToken) return;
 
+      const token = localStorage.getItem('token');
       axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
         { refreshToken },
         { headers: { Authorization: `Bearer ${token}` } }
       )
-        .then(res => {
-          localStorage.setItem('token', res.data.token);
-          dispatch(login({ token: res.data.token, user: res.data.user }));
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          if (!hasRedirectedRef.current) {
-            hasRedirectedRef.current = true;
-            router.push('/login');
-          }
-        });
+      .then(res => {
+        localStorage.setItem('token', res.data.token);
+        dispatch(login({ token: res.data.token, user: res.data.user }));
+      })
+      .catch(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        if (!hasRedirectedRef.current) {
+          hasRedirectedRef.current = true;
+          router.push('/login');
+        }
+      });
     }, 15 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [dispatch, router, pathname]);
 
   if (loading) return <LoadingSpinner />;
+  if (!isAuthenticated && pathname !== '/login') return <p>Redirecting to login...</p>;
 
-  return (
-    <WebSocketProvider>
-      <MenuProvider>
-        <SidebarProvider>{children}</SidebarProvider>
-      </MenuProvider>
-    </WebSocketProvider>
-  );
+  return <>{children}</>;
 }
+
 // ***********************************************
 
 
@@ -176,7 +176,8 @@ function AuthWrapper({ children }: { children: ReactNode }) {
 
 //   // Check if current route is auth route
 //   const authRoutes = ['/login', '/register', '/forgot-password']; // Expandable
-//   const isAuthRoute = authRoutes.some(route => pathname?.startsWith(route));  
+//   // const isAuthRoute = authRoutes.some(route => pathname?.startsWith(route));  
+//   const isAuthRoute = authRoutes.includes(pathname); // Use `includes`, not `startsWith`
 
 //   return (
 //     <html lang="en">
