@@ -143,171 +143,174 @@
 // // ***********************************************
 
 
-// 'use client';
-// import { Provider } from 'react-redux';
-// import './globals.css';
-// import { Inter } from 'next/font/google';
-// import { ThemeProvider } from './lib/ThemeContext';
-// import { MenuProvider } from './lib/MenuContext';
-// import { I18nextProvider } from 'react-i18next';
-// import i18n from './lib/i18n';
-// import { ToastContainer } from 'react-toastify';
-// import 'react-toastify/dist/ReactToastify.css';
-// import { WebSocketProvider } from './lib/WebSocketContext';
-// import { usePathname } from 'next/navigation';
-// import { useEffect, useState, useRef } from 'react';
-// import { useRouter } from 'next/navigation';
-// import store from './lib/store'; // Correct path import for store
-// import type { RootState } from './lib/store'; // For type support
-// import { SidebarProvider } from './lib/SidebarContext';
-// import { useDispatch, useSelector } from 'react-redux';
-// import axios from 'axios';
-// import { login } from './lib/authSlice'; // adjust to your actual path
-// import LoadingSpinner from './components/LoadingSpinner'; // adjust to your actual path
-// import { ReactNode } from 'react';
+'use client';
+import { Provider } from 'react-redux';
+import './globals.css';
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from './lib/ThemeContext';
+import { MenuProvider } from './lib/MenuContext';
+import { I18nextProvider } from 'react-i18next';
+import i18n from './lib/i18n';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { WebSocketProvider } from './lib/WebSocketContext';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import store from './lib/store'; // Correct path import for store
+import type { RootState } from './lib/store'; // For type support
+import { SidebarProvider } from './lib/SidebarContext';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
+import { login } from './lib/authSlice'; // adjust to your actual path
+import LoadingSpinner from './components/LoadingSpinner'; // adjust to your actual path
+import { ReactNode } from 'react';
 
-// // Functional component should call useSelector inside it
-// const inter = Inter({ subsets: ['latin'] });
+// Functional component should call useSelector inside it
+const inter = Inter({ subsets: ['latin'] });
 
-// export default function RootLayout({ children }: { children: ReactNode }) {
-//   const pathname = usePathname();
-//   // const dispatch = useDispatch();
-//   // const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
+export default function RootLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  // const dispatch = useDispatch();
+  // const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
 
-//   // Check if current route is auth route
-//   const authRoutes = ['/login', '/register', '/forgot-password']; // Expandable
-//   // const isAuthRoute = authRoutes.some(route => pathname?.startsWith(route));  
-//   const isAuthRoute = authRoutes.includes(pathname); // Use `includes`, not `startsWith`
-
-//   return (
-//     <html lang="en">
-//       <body className={inter.className}>
-//         <Provider store={store}>
-//           <I18nextProvider i18n={i18n}>
-//             <ThemeProvider>
-//               <ToastContainer />
-//               {isAuthRoute ? (
-//                 children
-//               ) : (
-//                 <AuthWrapper>
-//                   {/* Only include providers if authenticated */}
-//                   <WebSocketProvider>
-//                     <MenuProvider>
-//                       <SidebarProvider>
-//                         {children}
-//                       </SidebarProvider>
-//                     </MenuProvider>
-//                   </WebSocketProvider>
-//                 </AuthWrapper>
-//               )}
-//             </ThemeProvider>
-//           </I18nextProvider>
-//         </Provider>
-//       </body>
-//     </html>
-//   );
+  // Check if current route is auth route
+  const authRoutes = ['/login', '/register', '/forgot-password']; // Expandable
+  // const isAuthRoute = authRoutes.some(route => pathname?.startsWith(route));  
+  // const isAuthRoute = authRoutes.includes(pathname); // Use `includes`, not `startsWith`
+  const isAuthRoute = pathname === '/login';
+  console.log('Current Pathname:', pathname === '/login');
   
-// }
 
-// function AuthWrapper({ children }: { children: ReactNode }) {
-//   const pathname = usePathname();
-//   const router = useRouter();
-//   const dispatch = useDispatch();
-//   const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
-//   const [loading, setLoading] = useState(true);
-//   const hasRedirectedRef = useRef(false);
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <Provider store={store}>
+          <I18nextProvider i18n={i18n}>
+            <ThemeProvider>
+              <ToastContainer />
+              {isAuthRoute ? (
+                children
+              ) : (
+                <AuthWrapper>
+                  {/* Only include providers if authenticated */}
+                  <WebSocketProvider>
+                    <MenuProvider>
+                      <SidebarProvider>
+                        {children}
+                      </SidebarProvider>
+                    </MenuProvider>
+                  </WebSocketProvider>
+                </AuthWrapper>
+              )}
+            </ThemeProvider>
+          </I18nextProvider>
+        </Provider>
+      </body>
+    </html>
+  );
+  
+}
 
-//   useEffect(() => { 
-//     console.log('1');
-//     const verifyAuth = async () => {
-//       const token = localStorage.getItem('token');
-//       const refreshToken = localStorage.getItem('refreshToken');
+function AuthWrapper({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
+  const [loading, setLoading] = useState(true);
+  const hasRedirectedRef = useRef(false);
 
-//       // if (!token && pathname !== '/login') {
-//       if (!isAuthenticated && pathname !== '/login') {
-//         console.log('2');
-//         setLoading(false);
-//         if (!hasRedirectedRef.current) {
-//           console.log('Redirecting to login due to missing token');
-//           hasRedirectedRef.current = true;
-//           router.push('/login');
-//         }
-//         return;
-//       }
+  useEffect(() => { 
+    console.log('1');
+    const verifyAuth = async () => {
+      const token = localStorage.getItem('token');
+      const refreshToken = localStorage.getItem('refreshToken');
 
-//       try {
-//         console.log('3');
-//         const verifyRes = await axios.get(
-//           `${process.env.NEXT_PUBLIC_API_URL}/auth/verify`,
-//           { headers: { Authorization: `Bearer ${token}` } }
-//         );
+      // if (!token && pathname !== '/login') {
+      if (!isAuthenticated && pathname !== '/login') {
+        console.log('2');
+        setLoading(false);
+        if (!hasRedirectedRef.current) {
+          console.log('Redirecting to login due to missing token');
+          hasRedirectedRef.current = true;
+          router.push('/login');
+        }
+        return;
+      }
 
-//         dispatch(login({ token, user: verifyRes.data.user }));
-//       } catch (error) {
-//         console.log('4');
-//         try {
-//           const refreshRes = await axios.post(
-//             `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-//             { refreshToken },
-//             { headers: { Authorization: `Bearer ${token}` } }
-//           );
+      try {
+        console.log('3');
+        const verifyRes = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/verify`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-//           console.log('5');
-//           localStorage.setItem('token', refreshRes.data.token);
-//           dispatch(login({ token: refreshRes.data.token, user: refreshRes.data.user }));
-//         } catch (refreshError) {
-//           console.log('6');
-//           console.log('Redirecting to login due to failed refresh');
-//           localStorage.removeItem('token');
-//           localStorage.removeItem('refreshToken');
-//           if (!hasRedirectedRef.current) {
-//             console.log('7');
-//             hasRedirectedRef.current = true;
-//             setLoading(false);
-//             router.push('/login');
-//           }
-//         }
-//       } finally {
-//         console.log('8');
-//         setLoading(false);
-//       }
-//     };
+        dispatch(login({ token, user: verifyRes.data.user }));
+      } catch (error) {
+        console.log('4');
+        try {
+          const refreshRes = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+            { refreshToken },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
 
-//     verifyAuth();
+          console.log('5');
+          localStorage.setItem('token', refreshRes.data.token);
+          dispatch(login({ token: refreshRes.data.token, user: refreshRes.data.user }));
+        } catch (refreshError) {
+          console.log('6');
+          console.log('Redirecting to login due to failed refresh');
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          if (!hasRedirectedRef.current) {
+            console.log('7');
+            hasRedirectedRef.current = true;
+            setLoading(false);
+            router.push('/login');
+          }
+        }
+      } finally {
+        console.log('8');
+        setLoading(false);
+      }
+    };
 
-//     const interval = setInterval(() => {
-//       const refreshToken = localStorage.getItem('refreshToken');
-//       if (!refreshToken) return;
+    verifyAuth();
 
-//       const token = localStorage.getItem('token');
-//       axios.post(
-//         `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-//         { refreshToken },
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       )
-//       .then(res => {
-//         localStorage.setItem('token', res.data.token);
-//         dispatch(login({ token: res.data.token, user: res.data.user }));
-//       })
-//       .catch(() => {
-//         localStorage.removeItem('token');
-//         localStorage.removeItem('refreshToken');
-//         if (!hasRedirectedRef.current) {
-//           hasRedirectedRef.current = true;
-//           router.push('/login');
-//         }
-//       });
-//     }, 15 * 60 * 1000);
+    const interval = setInterval(() => {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) return;
 
-//     return () => clearInterval(interval);
-//   }, [dispatch, router, pathname]);
+      const token = localStorage.getItem('token');
+      axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+        { refreshToken },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then(res => {
+        localStorage.setItem('token', res.data.token);
+        dispatch(login({ token: res.data.token, user: res.data.user }));
+      })
+      .catch(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        if (!hasRedirectedRef.current) {
+          hasRedirectedRef.current = true;
+          router.push('/login');
+        }
+      });
+    }, 15 * 60 * 1000);
 
-//   console.log('MWISHO');
-//   if (loading) return <LoadingSpinner />;
-//   if (!isAuthenticated && pathname !== '/login') return <p>Redirecting to login...</p>;
+    return () => clearInterval(interval);
+  }, [dispatch, router, pathname]);
 
-//   return <>{children}</>;
-// }
+  console.log('MWISHO');
+  if (loading) return <LoadingSpinner />;
+  if (!isAuthenticated && pathname !== '/login') return <p>Redirecting to login...</p>;
+
+  return <>{children}</>;
+}
 // ******************************
 
 // function AuthWrapper({ children }: { children: React.ReactNode }) {
@@ -390,191 +393,163 @@
 // }
 // **********************************
 
+// // frontend\src\app\layout.tsx
+// 'use client';
+// import { Provider } from 'react-redux';
+// import store from './lib/store';
+// import './globals.css';
+// import { Inter } from 'next/font/google';
+// import { ThemeProvider } from './lib/ThemeContext';
+// import { MenuProvider } from './lib/MenuContext';
+// import { I18nextProvider } from 'react-i18next';
+// import i18n from './lib/i18n';
+// import { ToastContainer } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
+// import { WebSocketProvider } from './lib/WebSocketContext';
+// import { usePathname } from 'next/navigation';
+// import { useEffect, useState } from 'react';
+// import { useRouter } from 'next/navigation';
+// import type { RootState } from './lib/store'; // adjust path as needed
+// import { SidebarProvider } from './lib/SidebarContext';
+// import { useDispatch, useSelector } from 'react-redux';
+// import axios from 'axios';
+// import { login } from './lib/authSlice'; // adjust to your actual path
+// import LoadingSpinner from './components/LoadingSpinner'; // adjust to your actual path
+// import { useSharedStyles } from './sharedStyles';
 
+// const inter = Inter({ subsets: ['latin'] });
 
+// export default function RootLayout({ children }: { children: React.ReactNode }) {
+//   const pathname = usePathname();
 
-// frontend\src\app\layout.tsx
-'use client';
-import { Provider } from 'react-redux';
-import store from './lib/store';
-import './globals.css';
-import { Inter } from 'next/font/google';
-import { ThemeProvider } from './lib/ThemeContext';
-import { MenuProvider } from './lib/MenuContext';
-import { I18nextProvider } from 'react-i18next';
-import i18n from './lib/i18n';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { WebSocketProvider } from './lib/WebSocketContext';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import type { RootState } from './lib/store'; // adjust path as needed
-import { SidebarProvider } from './lib/SidebarContext';
-import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
-import { login } from './lib/authSlice'; // adjust to your actual path
-import LoadingSpinner from './components/LoadingSpinner'; // adjust to your actual path
-import { useSharedStyles } from './sharedStyles';
+//   // Check if current route is auth route
+//   const isAuthRoute = pathname === '/login';
 
-const inter = Inter({ subsets: ['latin'] });
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
-  // Check if current route is auth route
-  const isAuthRoute = pathname === '/login';
-
-  return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Provider store={store}>
-          <I18nextProvider i18n={i18n}>
-            <ThemeProvider>
-              <ToastContainer />
-              {isAuthRoute ? (
-                children
-              ) : (
-                <AuthWrapper>
-                  {/* Only include providers if authenticated */}
-                  <WebSocketProvider>
-                    <MenuProvider>
-                      <SidebarProvider>
-                        {children}
-                      </SidebarProvider>
-                    </MenuProvider>
-                  </WebSocketProvider>
-                </AuthWrapper>
-              )}
-            </ThemeProvider>
-          </I18nextProvider>
-        </Provider>
-      </body>
-    </html>
-
-    // <html lang="en">
-    //   <body className={inter.className}>
-    //     <Provider store={store}>
-    //       <WebSocketProvider>
-    //         <I18nextProvider i18n={i18n}>
-    //           <ThemeProvider>
-    //             <MenuProvider>
-    //               <SidebarProvider>
-    //                 {isAuthRoute ? (
-    //                   children
-    //                 ) : (
-    //                   <AuthWrapper>{children}</AuthWrapper>
-    //                 )}
-    //                 <ToastContainer />
-    //               </SidebarProvider>
-    //             </MenuProvider>
-    //           </ThemeProvider>
-    //         </I18nextProvider>
-    //       </WebSocketProvider>
-    //     </Provider>
-    //   </body>
-    // </html>
-  );
-}
-
-function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const verifyAuth = async () => {
-      const token = localStorage.getItem('token');
-      const refreshToken = localStorage.getItem('refreshToken');
-
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
-      try {
-        // Verify token
-        const verifyRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        dispatch(login({ 
-          token,
-          user: verifyRes.data.user 
-        }));
-      } catch (error) {
-        // Try to refresh token if verify fails
-        try {
-          const refreshRes = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
-            refreshToken
-          }, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          
-          localStorage.setItem('token', refreshRes.data.token);
-          dispatch(login({
-            token: refreshRes.data.token,
-            user: refreshRes.data.user
-          }));
-        } catch (refreshError) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          router.push('/login');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    verifyAuth();
-
-    // Set up token refresh interval (every 15 minutes)
-    const interval = setInterval(() => {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, { refreshToken }, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-          .then(res => {
-            localStorage.setItem('token', res.data.token);
-            dispatch(login({ token: res.data.token }));
-          })
-          .catch(() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            router.push('/login');
-          });
-      }
-    }, 15 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [dispatch, router]);
-
-  if (loading) return <LoadingSpinner />;
-  if (!isAuthenticated) return null;
-
-  return <>{children}</>;
-}
-
+//   return (
+//     <html lang="en">
+//       <body className={inter.className}>
+//         <Provider store={store}>
+//           <WebSocketProvider>
+//             <I18nextProvider i18n={i18n}>
+//               <ThemeProvider>
+//                 <MenuProvider>
+//                   <SidebarProvider>
+//                     {isAuthRoute ? (
+//                       children
+//                     ) : (
+//                       <AuthWrapper>{children}</AuthWrapper>
+//                     )}
+//                     <ToastContainer />
+//                   </SidebarProvider>
+//                 </MenuProvider>
+//               </ThemeProvider>
+//             </I18nextProvider>
+//           </WebSocketProvider>
+//         </Provider>
+//       </body>
+//     </html>
+//   );
+// }
 
 // function AuthWrapper({ children }: { children: React.ReactNode }) {
 //   const router = useRouter();
+//   const dispatch = useDispatch();
 //   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+//   const [loading, setLoading] = useState(true);
 
 //   useEffect(() => {
-//     if (!isAuthenticated) {
-//       router.push('/login');
-//     }
-//   }, [isAuthenticated, router]);
+//     const verifyAuth = async () => {
+//       const token = localStorage.getItem('token');
+//       const refreshToken = localStorage.getItem('refreshToken');
 
-//   if (!isAuthenticated) {
-//     return null; // or a loading spinner
-//   }
+//       if (!token) {
+//         router.push('/login');
+//         return;
+//       }
+
+//       try {
+//         // Verify token
+//         const verifyRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
+//           headers: { Authorization: `Bearer ${token}` }
+//         });
+        
+//         dispatch(login({ 
+//           token,
+//           user: verifyRes.data.user 
+//         }));
+//       } catch (error) {
+//         // Try to refresh token if verify fails
+//         try {
+//           const refreshRes = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+//             refreshToken
+//           }, {
+//             headers: {
+//               'Authorization': `Bearer ${token}`,
+//             },
+//           });
+          
+//           localStorage.setItem('token', refreshRes.data.token);
+//           dispatch(login({
+//             token: refreshRes.data.token,
+//             user: refreshRes.data.user
+//           }));
+//         } catch (refreshError) {
+//           localStorage.removeItem('token');
+//           localStorage.removeItem('refreshToken');
+//           router.push('/login');
+//         }
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     verifyAuth();
+
+//     // Set up token refresh interval (every 15 minutes)
+//     const interval = setInterval(() => {
+//       const refreshToken = localStorage.getItem('refreshToken');
+//       if (refreshToken) {
+//         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, { refreshToken }, {
+//           headers: {
+//             'Authorization': `Bearer ${localStorage.getItem('token')}`,
+//           },
+//         })
+//           .then(res => {
+//             localStorage.setItem('token', res.data.token);
+//             dispatch(login({ token: res.data.token }));
+//           })
+//           .catch(() => {
+//             localStorage.removeItem('token');
+//             localStorage.removeItem('refreshToken');
+//             router.push('/login');
+//           });
+//       }
+//     }, 15 * 60 * 1000);
+
+//     return () => clearInterval(interval);
+//   }, [dispatch, router]);
+
+//   if (loading) return <LoadingSpinner />;
+//   if (!isAuthenticated) return null;
 
 //   return <>{children}</>;
 // }
+
+
+// // function AuthWrapper({ children }: { children: React.ReactNode }) {
+// //   const router = useRouter();
+// //   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+// //   useEffect(() => {
+// //     if (!isAuthenticated) {
+// //       router.push('/login');
+// //     }
+// //   }, [isAuthenticated, router]);
+
+// //   if (!isAuthenticated) {
+// //     return null; // or a loading spinner
+// //   }
+
+// //   return <>{children}</>;
+// // }
+// // // ***********************************************
