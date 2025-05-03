@@ -26,8 +26,8 @@ const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
+  // const dispatch = useDispatch();
+  // const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Correct placement
 
   // Check if current route is auth route
   const authRoutes = ['/login', '/register', '/forgot-password']; // Expandable
