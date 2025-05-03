@@ -67,12 +67,13 @@ function AuthWrapper({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const hasRedirectedRef = useRef(false);
 
-  useEffect(() => {
+  useEffect(() => { 
     const verifyAuth = async () => {
       const token = localStorage.getItem('token');
       const refreshToken = localStorage.getItem('refreshToken');
 
-      if (!token && pathname !== '/login') {
+      // if (!token && pathname !== '/login') {
+      if (!isAuthenticated && pathname !== '/login') {
         setLoading(false);
         if (!hasRedirectedRef.current) {
           console.log('Redirecting to login due to missing token');
