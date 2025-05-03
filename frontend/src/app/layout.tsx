@@ -27,7 +27,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
 
   // Check if current route is auth route
-  const isAuthRoute = pathname === '/login';
+  const authRoutes = ['/login', '/register', '/forgot-password']; // Expandable
+  const isAuthRoute = authRoutes.some(route => pathname?.startsWith(route));  
 
   return (
     <html lang="en">
@@ -73,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 // }
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -84,7 +86,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
       const token = localStorage.getItem('token');
       const refreshToken = localStorage.getItem('refreshToken');
 
-      if (!token) {
+      if (!token && pathname !== '/login') {
         if (!hasRedirectedRef.current) {
           console.log('Redirecting to login due to missing token');
           hasRedirectedRef.current = true;
