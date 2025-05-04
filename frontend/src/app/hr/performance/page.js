@@ -1,6 +1,7 @@
 'use client';
 import React, { useContext } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from 'recharts';
+// import { Legend } from 'chart.js';
 import Header from '../../components/header';
 import Sidebar from '../../components/sidebar';
 import { useSharedStyles } from '../../sharedStyles';
