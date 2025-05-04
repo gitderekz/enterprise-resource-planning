@@ -1,208 +1,141 @@
-'use client'; // Mark as a Client Component
+'use client';
 import React, { useContext } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  FaSearch, FaFilter, FaPlus, FaSort, FaCheck, FaTimes,FaCommentDots,FaBell,
-  FaUserCircle,
-  FaHome,
-  FaBox,
-  FaList,
-  FaStore,
-  FaWallet,
-  FaCog,
-  FaSignOutAlt,
-} from 'react-icons/fa'; // Icons from react-icons
-import { usePathname } from 'next/navigation';
-import { useSidebar } from '../../lib/SidebarContext';
-import { MenuContext } from '../../lib/MenuContext';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Header from '../../components/header';
 import Sidebar from '../../components/sidebar';
 import { useSharedStyles } from '../../sharedStyles';
+import { usePathname } from 'next/navigation';
+import { MenuContext } from '../../lib/MenuContext';
+import { useSidebar } from '../../lib/SidebarContext';
 
-const Invoices = () => {
-  const { isSidebarVisible, toggleSidebar } = useSidebar();
+const invoiceStatusData = [
+  { status: 'Paid', count: 120 },
+  { status: 'Pending', count: 45 },
+  { status: 'Overdue', count: 15 },
+];
+
+const recentInvoices = [
+  { id: 'INV-001', client: 'Acme Corp', amount: 1250.50, date: '2023-06-15', dueDate: '2023-07-15', status: 'Paid' },
+  { id: 'INV-002', client: 'Globex Inc', amount: 890.00, date: '2023-06-18', dueDate: '2023-07-18', status: 'Pending' },
+  { id: 'INV-003', client: 'Soylent Corp', amount: 2450.75, date: '2023-06-20', dueDate: '2023-07-20', status: 'Pending' },
+  { id: 'INV-004', client: 'Initech LLC', amount: 1500.00, date: '2023-06-22', dueDate: '2023-07-22', status: 'Overdue' },
+];
+
+export default function InvoicesPage() {
   const styles = useSharedStyles();
-  const products = [
-    {
-      id: 1,
-      image: 'https://cdn.pixabay.com/photo/2025/02/14/13/46/crested-tit-9406740_1280.jpg',
-      name: 'Unisex T-Shirt White',
-      status: 'Active',
-      stock: '12 in stock',
-      category: 'T-Shirt',
-      location: 'Store 3',
-    },
-    {
-      id: 2,
-      image: 'https://cdn.pixabay.com/photo/2025/02/14/13/46/crested-tit-9406740_1280.jpg',
-      name: 'Unisex T-Shirt Block',
-      status: 'Active',
-      stock: '10 in stock',
-      category: 'T-Shirt',
-      location: 'Store 4',
-    },
-    {
-      id: 3,
-      image: 'https://cdn.pixabay.com/photo/2025/02/14/13/46/crested-tit-9406740_1280.jpg',
-      name: 'Tonk Top White',
-      status: 'Active',
-      stock: '28 in stock',
-      category: 'Tops',
-      location: 'Store 3',
-    },
-    {
-      id: 4,
-      image: 'https://cdn.pixabay.com/photo/2025/02/14/13/46/crested-tit-9406740_1280.jpg',
-      name: 'Rain Jacket Mole',
-      status: 'Active',
-      stock: '12 in stock',
-      category: 'Outwear',
-      location: 'Store 3',
-    },
-    {
-      id: 5,
-      image: 'https://cdn.pixabay.com/photo/2025/02/14/13/46/crested-tit-9406740_1280.jpg',
-      name: 'Bomber Jacket Mole',
-      status: 'Sold out',
-      stock: '0 in stock',
-      category: 'Outwear',
-      location: 'Store 1',
-    },
-    {
-      id: 6,
-      image: 'https://cdn.pixabay.com/photo/2025/02/14/13/46/crested-tit-9406740_1280.jpg',
-      name: 'Boots',
-      status: 'Low in stock',
-      stock: '1 in stock',
-      category: 'Outwear',
-      location: 'Store 1',
-    },
-  ];
-
-  const router = useRouter();
-  const handleProductClick = (id) => {
-    console.log('id',id);
-    
-    router.push(`/product-details/${id}`);
-  };
+  const pathname = usePathname();
+  const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible } = useSidebar();
+  const currentMenuItem = menuItems.find(item => item.link === pathname);
+  const pageTitle = currentMenuItem?.menu_item || 'Invoices';
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <Header />
-
-      {/* Main Content */}
       <div style={styles.mainContent}>
-        {/* Sidebar */}
         <Sidebar />
-
-        {/* Scrollable Content */}
-        {/* <div style={styles.content}> */}
         <div style={{ 
           marginLeft: isSidebarVisible ? '250px' : '0',
           padding: '24px',
           width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
           transition: 'all 0.3s ease',
         }}>
-          {/* Page Title */}
-          <h1 style={styles.pageTitle}>Products</h1>
+          <h1 style={styles.pageTitle}>{pageTitle}</h1>
 
-          {/* Search, Filter, and Add Product */}
-          <div style={styles.actions}>
-            <div style={styles.searchContainer}>
-              <FaSearch style={styles.searchIcon} />
-              <input
-                type="text"
-                placeholder="Search..."
-                style={styles.searchInput}
-              />
-            </div>
-            <div style={styles.filterContainer}>
-              <FaFilter style={styles.filterIcon} />
-              <select style={styles.filterDropdown}>
-                <option>Filter by</option>
-                <option>Active</option>
-                <option>Sold out</option>
-                <option>Low in stock</option>
-              </select>
-            </div>
-            <button style={styles.addProductButton}>
-              <FaPlus style={styles.addProductIcon} /> Add Product
-            </button>
-          </div>
-
-          {/* Table */}
-          <div style={styles.table}>
-            {/* Table Header */}
-            <div style={styles.tableHeader}>
-              <div style={styles.tableHeaderCell}>
-                Name of product <FaSort style={styles.sortIcon} />
+          {/* Invoice Summary */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Invoice Status</h2>
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="h-64 w-full md:w-1/2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={invoiceStatusData}>
+                    <XAxis dataKey="status" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="count" fill="#8884d8" name="Number of Invoices" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-              <div style={styles.tableHeaderCell}>
-                Status <FaSort style={styles.sortIcon} />
-              </div>
-              <div style={styles.tableHeaderCell}>
-                Stock Info <FaSort style={styles.sortIcon} />
-              </div>
-              <div style={styles.tableHeaderCell}>
-                Category <FaSort style={styles.sortIcon} />
-              </div>
-              <div style={styles.tableHeaderCell}>
-                Location <FaSort style={styles.sortIcon} />
-              </div>
-            </div>
-
-            {/* Table Body */}
-            <div style={styles.tableBody}>
-              {products.map((product) => (
-                <div key={product.id} style={styles.tableRow} onClick={() => handleProductClick(product.id)} >
-                  <div style={styles.tableCell}>
-                    <input type="checkbox" style={styles.checkbox} />
-                    <img src={product.image} alt={product.name} style={styles.productImage} />
-                    <div style={styles.productName}>{product.name}</div>
+              <div className="w-full md:w-1/2">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="border rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold">120</div>
+                    <div className="text-sm text-gray-600">Paid</div>
                   </div>
-                  <div style={styles.tableCell}>
-                    <div style={{ ...styles.statusBadge, backgroundColor: getStatusColor(product.status) }}>
-                      {product.status}
-                    </div>
+                  <div className="border rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold">45</div>
+                    <div className="text-sm text-gray-600">Pending</div>
                   </div>
-                  <div style={styles.tableCell}>
-                    <div style={product.stock === '0 in stock' ? styles.inactiveText : null}>
-                      {product.stock}
-                    </div>
-                  </div>
-                  <div style={styles.tableCell}>
-                    <div style={product.stock === '0 in stock' ? styles.inactiveText : null}>
-                      {product.category}
-                    </div>
-                  </div>
-                  <div style={styles.tableCell}>
-                    <div style={product.stock === '0 in stock' ? styles.inactiveText : null}>
-                      {product.location}
-                    </div>
+                  <div className="border rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold">15</div>
+                    <div className="text-sm text-gray-600">Overdue</div>
                   </div>
                 </div>
-              ))}
+                <div className="mt-4">
+                  <div className="flex justify-between mb-1">
+                    <span>Total Outstanding:</span>
+                    <span className="font-bold">$12,450.25</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Average Days to Pay:</span>
+                    <span className="font-bold">14.5 days</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Invoices */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Recent Invoices</h2>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Create New Invoice
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 border-b">Invoice #</th>
+                    <th className="py-2 px-4 border-b">Client</th>
+                    <th className="py-2 px-4 border-b">Amount</th>
+                    <th className="py-2 px-4 border-b">Date</th>
+                    <th className="py-2 px-4 border-b">Due Date</th>
+                    <th className="py-2 px-4 border-b">Status</th>
+                    <th className="py-2 px-4 border-b">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentInvoices.map((invoice, index) => (
+                    <tr key={index}>
+                      <td className="py-2 px-4 border-b">{invoice.id}</td>
+                      <td className="py-2 px-4 border-b">{invoice.client}</td>
+                      <td className="py-2 px-4 border-b">${invoice.amount.toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b">{invoice.date}</td>
+                      <td className="py-2 px-4 border-b">{invoice.dueDate}</td>
+                      <td className="py-2 px-4 border-b">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          invoice.status === 'Paid' ? 'bg-green-100 text-green-800' :
+                          invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {invoice.status}
+                        </span>
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                        <button className="text-blue-600 hover:underline mr-2">View</button>
+                        <button className="text-gray-600 hover:underline">PDF</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'Active':
-      return '#8253D7';
-    case 'Sold out':
-      return '#461B93';
-    case 'Low in stock':
-      return '#6A3CBC';
-    default:
-      return '#8253D7';
-  }
-};
-
-
-export default Invoices;
+}

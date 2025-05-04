@@ -13,10 +13,12 @@ import {
   FaSignOutAlt,
 } from 'react-icons/fa'; // Icons from react-icons
 import Header from '../components/header';
+import { useSidebar } from '../lib/SidebarContext';
 import Sidebar from '../components/sidebar';
 import { useSharedStyles } from '../sharedStyles';
 
 const ProductsPage = () => {
+  const { isSidebarVisible, toggleSidebar } = useSidebar();
   const styles = useSharedStyles();
   const products = [
     {

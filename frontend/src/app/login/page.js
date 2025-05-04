@@ -82,23 +82,26 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { email, password });
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { 
+        email, 
+        password 
+      });
       
-      const token = response.data.token;
-      const user = response.data.user;
-
+      const { token, refreshToken, user } = response.data;
+  
       // Save to local storage
       localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('user', JSON.stringify(user));
-
+  
       // Dispatch login action to Redux
       dispatch(login({ token, user }));
-
+  
       toast.success('Login successful!');
       router.push('/dashboard');
     } catch (error) {
-      toast.error('Login failed!');
-      console.error('Login failed:', error?.response?.data || error.message || error);
+      toast.error(error.response?.data?.message || 'Login failed!');
+      console.error('Login failed:', error);
     }
   };
 
