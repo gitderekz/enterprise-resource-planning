@@ -23,7 +23,7 @@ export default function AssessmentPage() {
   useEffect(() => {
     const fetchFinancialData = async () => {
       // try {
-      //   const response = await axios.get('/api/finance/assessment');
+      //   const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/finance/assessment');
       //   setFinancialData(response.data);
       // } catch (error) {
       //   toast.error('Failed to load financial data');

@@ -1,11 +1,17 @@
 const express = require('express');
-const { login, register } = require('../controllers/authController');
+const { login, register, forgotPassword, verifyResetToken, resetPassword } = require('../controllers/authController');
 const auth = require('../middleware/auth');
+const { verify } = require('jsonwebtoken');
 
 const router = express.Router();
 
 router.post('/login', login);
 router.post('/register', register);
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-reset-token', verifyResetToken);
+router.post('/reset-password', resetPassword);
+// router.post('/send-verification-email', sendVerificationEmail);
+// router.post('/verify-reset-token', verifyResetToken);
 
 // New endpoints for token verification
 router.get('/verify', auth, (req, res) => {

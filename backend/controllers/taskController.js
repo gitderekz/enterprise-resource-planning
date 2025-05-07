@@ -5,12 +5,23 @@ const NotificationService = require('../services/notificationService');
 
 // Get all tasks
 const getTasks = async (req, res) => {
-    try {
-        const tasks = await Task.findAll();
-        res.json(tasks);
-    } catch (err) {
-        res.status(500).json({ message: 'Error fetching tasks', error: err.message });
-    }
+    // try {
+    //     const tasks = await Task.findAll();
+    //     res.json(tasks);
+    // } catch (err) {
+    //     res.status(500).json({ message: 'Error fetching tasks', error: err.message });
+    // }
+    
+  try {
+    const tasks = await Task.findAll({
+      where: { assigned_to: req.user.id }, // Only get tasks for logged in user
+      order: [['due_date', 'ASC']]
+    });
+    res.json(tasks);
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    res.status(500).json({ message: 'Failed to fetch tasks' });
+  }
 };
 
 // // Create a new task

@@ -32,7 +32,7 @@ export default function CustomerInfoPage() {
   // useEffect(() => {
   //   const fetchCustomers = async () => {
   //     try {
-  //       const response = await axios.get('/api/customers');
+  //       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/customers');
   //       setCustomers(response.data);
   //     } catch (error) {
   //       toast.error('Failed to fetch customers');

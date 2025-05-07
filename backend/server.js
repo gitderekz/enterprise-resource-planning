@@ -7,6 +7,9 @@ const db = require('./models'); // Sequelize models
 const { NotificationService, notificationServiceInstance } = require('./services/notificationService');
 
 const app = express();
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // === CORS Setup ===
 const allowedOrigins = process.env.CLIENT_ORIGIN?.split(',') || ['http://localhost:3000'];
@@ -32,6 +35,7 @@ const invoiceRoutes = require('./routes/invoiceRoutes');
 const languageRoutes = require('./routes/languageRoutes');
 const menuRoutes = require('./routes/menuRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const recruitmentRoutes = require('./routes/recruitmentRoutes');
 
 // === Mount Routes ===
 app.use('/api/auth', authRoutes);
@@ -42,6 +46,7 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/languages', languageRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/hr/recruitment', recruitmentRoutes);
 
 // === Start HTTP Server ===
 const PORT = process.env.PORT || 5000;
