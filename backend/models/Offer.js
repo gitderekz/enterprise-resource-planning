@@ -1,6 +1,6 @@
-// models/Offer.js
+// models/offer.js
 module.exports = (sequelize, DataTypes) => {
-    const Offer = sequelize.define('Offer', {
+    const offer = sequelize.define('offer', {
       candidateId: {
         type: DataTypes.INTEGER,
         allowNull: false
@@ -26,16 +26,16 @@ module.exports = (sequelize, DataTypes) => {
       notes: DataTypes.TEXT
     });
   
-    Offer.associate = function(models) {
-      Offer.belongsTo(models.Candidate, {
+    offer.associate = function(models) {
+      offer.belongsTo(models.candidate, {
         foreignKey: 'candidateId',
         as: 'candidate'
       });
-      Offer.belongsTo(models.JobRequisition, {
+      offer.belongsTo(models.jobrequisition, {
         foreignKey: 'jobRequisitionId',
         as: 'jobRequisition'
       });
     };
   
-    return Offer;
+    return offer;
   };

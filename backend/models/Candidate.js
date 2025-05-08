@@ -1,6 +1,6 @@
-// models/Candidate.js
+// models/candidate.js
 module.exports = (sequelize, DataTypes) => {
-    const Candidate = sequelize.define('Candidate', {
+    const candidate = sequelize.define('candidate', {
     name: {
         type: DataTypes.STRING,
         allowNull: false
@@ -32,16 +32,16 @@ module.exports = (sequelize, DataTypes) => {
     jobRequisitionId: DataTypes.INTEGER
     });
 
-    Candidate.associate = function(models) {
-      Candidate.belongsTo(models.JobRequisition, {
+    candidate.associate = function(models) {
+      candidate.belongsTo(models.jobrequisition, {
         foreignKey: 'jobRequisitionId',
         as: 'jobRequisition'
       });
-      Candidate.hasMany(models.Interview, {
+      candidate.hasMany(models.interview, {
         foreignKey: 'candidateId',
         as: 'interviews'
       });
     };
     
-    return Candidate;
+    return candidate;
 };

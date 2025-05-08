@@ -1,6 +1,6 @@
-// models/Interview.js
+// models/interview.js
 module.exports = (sequelize, DataTypes) => {
-const Interview = sequelize.define('Interview', {
+const interview = sequelize.define('interview', {
     candidateId: {
     type: DataTypes.INTEGER,
     allowNull: false
@@ -23,16 +23,16 @@ const Interview = sequelize.define('Interview', {
     jobRequisitionId: DataTypes.INTEGER
 });
 
-Interview.associate = function(models) {
-  Interview.belongsTo(models.Candidate, {
+interview.associate = function(models) {
+  interview.belongsTo(models.candidate, {
     foreignKey: 'candidateId',
     as: 'candidate'
   });
-  Interview.belongsTo(models.JobRequisition, {
+  interview.belongsTo(models.jobrequisition, {
     foreignKey: 'jobRequisitionId',
     as: 'jobRequisition'
   });
 };
 
-return Interview;
+return interview;
 };

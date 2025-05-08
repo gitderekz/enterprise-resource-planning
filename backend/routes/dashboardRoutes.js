@@ -15,10 +15,10 @@ router.get('/', async (req, res) => {
         const users = await User.count();
         const roles = await Role.count();
         const [openPositions, candidates, interviews, hires] = await Promise.all([
-            db.JobRequisition.count({ where: { status: 'Open' } }),
-            db.Candidate.count(),
-            db.Interview.count(),
-            db.Candidate.count({ where: { status: 'Hired' } })
+            db.jobRequisition.count({ where: { status: 'Open' } }),
+            db.candidate.count(),
+            db.interview.count(),
+            db.candidate.count({ where: { status: 'Hired' } })
         ]);
         res.json({users, roles, openPositions, candidates, interviews, hires});
     } catch (err) {

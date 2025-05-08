@@ -1,6 +1,6 @@
-// models/JobRequisition.js
+// models/jobRequisition.js
 module.exports = (sequelize, DataTypes) => {
-    const JobRequisition = sequelize.define('JobRequisition', {
+    const jobrequisition = sequelize.define('jobrequisition', {
       position: {
         type: DataTypes.STRING,
         allowNull: false
@@ -29,16 +29,16 @@ module.exports = (sequelize, DataTypes) => {
       }
     });
 
-    JobRequisition.associate = function(models) {
-      JobRequisition.hasMany(models.Candidate, {
+    jobrequisition.associate = function(models) {
+      jobrequisition.hasMany(models.candidate, {
         foreignKey: 'jobRequisitionId',
         as: 'candidates'
       });
-      JobRequisition.hasMany(models.Interview, {
+      jobrequisition.hasMany(models.interview, {
         foreignKey: 'jobRequisitionId',
         as: 'interviews'
       });
     };
   
-    return JobRequisition;
+    return jobrequisition;
   };
