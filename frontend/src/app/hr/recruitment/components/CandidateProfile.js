@@ -1,5 +1,5 @@
 // app/hr/recruitment/components/CandidateProfile.js
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -7,6 +7,11 @@ const CandidateProfile = ({ candidate, onStatusChange }) => {
   const [notes, setNotes] = useState(candidate.notes || '');
   const [status, setStatus] = useState(candidate.status || 'New');
   const [loading, setLoading] = useState(false);
+
+  useEffect(()=>{
+    setNotes(candidate.notes||'');
+    setStatus(candidate.status||'New');
+  },[candidate])
 
   const handleSave = async () => {
     setLoading(true);
@@ -22,6 +27,8 @@ const CandidateProfile = ({ candidate, onStatusChange }) => {
       console.error('Error updating candidate:', error);
     } finally {
       setLoading(false);
+      setNotes('');
+      setStatus('');
     }
   };
 
@@ -69,7 +76,7 @@ const CandidateProfile = ({ candidate, onStatusChange }) => {
           ))}
         </div>
       </div>
-
+      
       <div className="mb-6">
         <h3 className="font-semibold mb-2">Status</h3>
         <select

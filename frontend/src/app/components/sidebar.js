@@ -203,7 +203,7 @@ export default function Sidebar() {
 
       {/* Fixed Footer */}
       <div style={styles.sidebarFooter}>
-        <button 
+        {/* <button 
           style={styles.textButton} 
           onClick={() => router.push('/add-product')}
           onMouseEnter={() => setHoveredItem('add-product')}
@@ -211,8 +211,7 @@ export default function Sidebar() {
         >
           <FaPlus style={{ ...styles.menuIcon, marginRight: '12px' }} /> 
           Add product
-        </button>
-
+        </button> */}
         <button
           style={styles.textButton}
           onClick={() => {
