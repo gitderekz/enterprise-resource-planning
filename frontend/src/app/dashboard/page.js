@@ -5,7 +5,7 @@ import Navbar from "../components/navbar";
 import Header from "../components/header";
 
 import { useDispatch, useSelector } from 'react-redux';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
@@ -19,6 +19,9 @@ import {
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '../lib/SidebarContext';
 import { MenuContext } from '../lib/MenuContext';
+import { recruitmentService } from '../hr/recruitment/services/recruitmentService';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
@@ -29,6 +32,49 @@ const DashboardPage = () => {
   const router = useRouter();
   const { isSidebarVisible, toggleSidebar } = useSidebar();
   const styles = useSharedStyles();
+  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [vacancies, setVacancies] = useState(0);
+  const [applicants, setApplicants] = useState(0);
+  const [interviews, setInterviews] = useState(0);
+  const [offers, setOffers] = useState(0); // <-- Add this!  
+  
+  const loadDashboardData = async () => {    
+    setLoading(true);
+    try {
+      const [dashboardData/*, statsData, interviewsData, offersData*/] = await Promise.all([
+        await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/dashboard`,{
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }).then(res => res.data),
+        // recruitmentService.getStats(),//openPositions, candidates, interviews, hires
+        // recruitmentService.getInterviews(/*{ status: 'Completed' }*/),
+        // recruitmentService.getOffers()
+      ]);
+      setUsers(dashboardData.users);
+      setRoles(dashboardData.roles);
+      setVacancies(dashboardData.openPositions);
+      setApplicants(dashboardData.candidates);
+      setInterviews(dashboardData.interviews);
+      setOffers(dashboardData.hires);
+    } catch (error) {
+      toast.error('Failed to load dashboard data');
+      console.log('Failed to load dashboard data',error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadDashboardData(); }, []);
+
+  const dashboardCards = [
+    { value: users, unit: 'Users', title: 'Registered Users' },
+    { value: roles, unit: 'Roles', title: 'System Roles' },
+    { value: vacancies, unit: 'Openings', title: 'Open Vacancies' },
+    { value: applicants, unit: 'Applicants', title: 'Total Applicants' },
+    { value: interviews, unit: 'Interviews', title: 'Scheduled Interviews' },
+  ];
+  
 
   const handleLogout = () => {
     dispatch(logout());
@@ -66,21 +112,23 @@ const DashboardPage = () => {
           width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
           transition: 'all 0.3s ease',
         }}>
-          {/* Top Section: 5 Cards with Scroll Arrow */}
-          <div style={styles.topSection}>
-            <div style={styles.cardScrollContainer}>
-              {[...Array(5)].map((_, index) => (
-                <div key={index} style={styles.card}>
-                  <div style={styles.cardNumber}>123</div>
-                  <div style={styles.cardUnit}>Units</div>
-                  <div style={styles.cardTitle}>Card Title</div>
-                </div>
-              ))}
+          {/* Top Section: Dynamic Dashboard Cards */}
+          {loading ? <div>Loading dashboard...</div> : (
+            <div style={styles.topSection}>
+              <div style={styles.cardScrollContainer}>
+                {dashboardCards.map((card, index) => (
+                  <div key={index} style={styles.card}>
+                    <div style={styles.cardNumber}>{card.value}</div>
+                    <div style={styles.cardUnit}>{card.unit}</div>
+                    <div style={styles.cardTitle}>{card.title}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={styles.scrollArrow}>
+                <FaArrowRight style={styles.arrowIcon} />
+              </div>
             </div>
-            <div style={styles.scrollArrow}>
-              <FaArrowRight style={styles.arrowIcon} />
-            </div>
-          </div>
+          )}
 
           {/* Bottom Section */}
           <div style={styles.bottomSection}>

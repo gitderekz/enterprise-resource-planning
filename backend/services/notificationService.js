@@ -86,13 +86,14 @@ class NotificationService {
   async markAsRead(notificationId, userId) {
     try {
       const notification = await Notification.findOne({
-        where: {
-          id: notificationId,
-          userIds: {
-            [Op.contains]: [userId]
-          }
-        }
-      });
+        where: Sequelize.and(
+          { id: notificationId },
+          Sequelize.where(
+            Sequelize.fn('JSON_CONTAINS', Sequelize.col('userIds'), JSON.stringify(userId)),
+            1
+          )
+        )
+      });      
 
       if (notification) {
         notification.isRead = true;

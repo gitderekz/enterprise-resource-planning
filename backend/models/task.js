@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     description: DataTypes.TEXT,
     assigned_to: DataTypes.INTEGER,
-    status: DataTypes.STRING,
+    status: {type: DataTypes.ENUM('Pending','In Progress','Completed'),defaultValue:'Pending'},
     due_date: DataTypes.DATE
   }, {
     sequelize,

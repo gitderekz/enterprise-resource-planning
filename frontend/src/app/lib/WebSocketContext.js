@@ -622,7 +622,14 @@ export function WebSocketProvider({ children }) {
     toggleSound: () => setSoundEnabled(!soundEnabled),
     markAsRead: async (id) => {
       try {
-        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${id}/read`);
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${id}/read`,
+          {},
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
         setNotifications(prev => 
           prev.map(n => n.id === id ? {...n, isRead: true} : n)
         );

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { notificationServiceInstance } = require('../services/notificationService');
 const auth = require('../middleware/auth');
+const { createTasks } = require('../services/taskService');
 
 // Get user notifications
 router.get('/', auth, async (req, res) => {
@@ -46,7 +47,14 @@ router.post('/', auth, async (req, res) => {
           systemAdded: 'some-value' // Example of additional metadata
         }
       });
-      
+      if(notification && req.body.type === 'task'){
+        await createTasks({
+          name: req.body.title,
+          description: req.body.message,
+          assigned_to: req.body.userIds,
+          due_date: req.body.due_date || new Date() // handle due_date as needed
+        });
+      }
       res.status(201).json(notification);
     } catch (err) {
       res.status(400).json({ error: err.message });

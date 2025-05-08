@@ -28,6 +28,7 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const { socket, sendMessage } = useWebSocket();
+  const [updatingTaskIds, setUpdatingTaskIds] = useState([]);
 
   useEffect(() => {
     if (socket) {
@@ -105,6 +106,34 @@ export default function TasksPage() {
     }
   };
 
+  const handleUpdateTask = async (taskId, status) => {
+    setUpdatingTaskIds(prev => [...prev, taskId]);
+  
+    try {
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/tasks/${taskId}`, { status }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+  
+      const updatedTask = response.data.task;
+  
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === updatedTask.id ? { ...task, status: updatedTask.status } : task
+        )
+      );
+  
+      toast.success('Task updated successfully');
+    } catch (error) {
+      toast.error('Failed to update task');
+      console.error('Error updating task:', error);
+    } finally {
+      setUpdatingTaskIds(prev => prev.filter(id => id !== taskId));
+    }
+  };
+  
+
   const handleDeleteTask = async (taskId) => {
     try {
       // Send to server via WebSocket
@@ -145,12 +174,12 @@ export default function TasksPage() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Task Overview</h2>
               <div className="flex gap-2">
-                <button 
+                {/* <button 
                   onClick={handleCreateTask}
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 >
                   Create Task
-                </button>
+                </button> */}
                 <button 
                   onClick={handleDownloadReport}
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -203,12 +232,27 @@ export default function TasksPage() {
                             </span>
                           </td>
                           <td className="py-2 px-4 border-b">{task.due_date}</td>
-                          <td className="py-2 px-4 border-b">
+                          <td className="py-2 px-4 border-b text-right">
                             <button 
                               onClick={() => handleDeleteTask(task.id)}
-                              className="text-red-600 hover:underline"
+                              disabled={updatingTaskIds.includes(task.id)}
+                              className={`text-red-600 hover:underline ${updatingTaskIds.includes(task.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                               Delete
+                            </button> | 
+                            <button 
+                              onClick={() => handleUpdateTask(task.id, 'In Progress')}
+                              disabled={updatingTaskIds.includes(task.id)}
+                              className={`text-blue-600 hover:underline ${updatingTaskIds.includes(task.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              Progressing
+                            </button> | 
+                            <button 
+                              onClick={() => handleUpdateTask(task.id, 'Completed')}
+                              disabled={updatingTaskIds.includes(task.id)}
+                              className={`text-green-600 hover:underline ${updatingTaskIds.includes(task.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              Completed
                             </button>
                           </td>
                         </tr>

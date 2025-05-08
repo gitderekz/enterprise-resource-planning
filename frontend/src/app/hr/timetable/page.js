@@ -370,6 +370,20 @@ export default function TimetablePage() {
                     <option value="urgent">Urgent</option>
                   </select>
                 </div>
+                {
+                  notificationData.type==='task'&&(
+                    <div>
+                      <label className="block text-gray-700 mb-2">Due date</label>
+                      <input
+                        type="datetime-local"
+                        className="w-full p-2 border rounded"
+                        value={notificationData.due_date}
+                        onChange={(e) => setNotificationData({...notificationData, due_date: e.target.value})}
+                        required
+                      />
+                    </div>
+                  )
+                }
               </div>
             </div>
 

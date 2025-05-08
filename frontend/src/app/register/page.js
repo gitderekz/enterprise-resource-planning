@@ -30,7 +30,7 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
-        name: formData.name,
+        username: formData.name,
         email: formData.email,
         password: formData.password
       });

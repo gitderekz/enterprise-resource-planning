@@ -8,7 +8,7 @@ const Role = db.role; // use lowercase if model name is defined as 'user'
 
 // Register a new user
 const register = async (req, res) => {
-    const { username, email, password, role_id } = req.body;
+    const { username, email, password, role_id=6 } = req.body;
 
     try {
         // Check if user already exists

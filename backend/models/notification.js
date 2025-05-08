@@ -1,10 +1,15 @@
 module.exports = (sequelize, DataTypes) => {
     const notification = sequelize.define('notification', {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true
-      },
+      // id: {
+      //   type: DataTypes.UUID,
+      //   defaultValue: DataTypes.UUIDV4,
+      //   primaryKey: true
+      // },
+      // id: {
+      //   type: DataTypes.INTEGER,
+      //   primaryKey: true,
+      //   autoIncrement: true,
+      // },
       userIds: {
         type: DataTypes.JSON, // Array of user IDs
         allowNull: false
