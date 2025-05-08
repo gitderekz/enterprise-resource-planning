@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
         const users = await User.count();
         const roles = await Role.count();
         const [openPositions, candidates, interviews, hires] = await Promise.all([
-            db.jobRequisition.count({ where: { status: 'Open' } }),
+            db.jobrequisition.count({ where: { status: 'Open' } }),
             db.candidate.count(),
             db.interview.count(),
             db.candidate.count({ where: { status: 'Hired' } })

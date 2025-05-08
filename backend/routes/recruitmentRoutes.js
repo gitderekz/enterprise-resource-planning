@@ -24,7 +24,7 @@
 // router.get('/stats', async (req, res) => {
 //   try {
 //     const stats = {
-//       openPositions: await db.jobRequisition.count({ where: { status: 'Approved' } }),
+//       openPositions: await db.jobrequisition.count({ where: { status: 'Approved' } }),
 //       candidates: await db.candidate.count(),
 //       interviews: await db.interview.count(),
 //       hires: await db.candidate.count({ where: { status: 'Hired' } })
@@ -38,7 +38,7 @@
 // // Job Requisitions
 // router.get('/requisitions', async (req, res) => {
 //   try {
-//     const requisitions = await db.jobRequisition.findAll();
+//     const requisitions = await db.jobrequisition.findAll();
 //     res.json(requisitions);
 //   } catch (error) {
 //     res.status(500).json({ message: 'Error fetching requisitions' });
@@ -47,7 +47,7 @@
 
 // // router.post('/requisitions', async (req, res) => {
 // //   try {
-// //     const requisition = await db.jobRequisition.create(req.body);
+// //     const requisition = await db.jobrequisition.create(req.body);
 // //     res.status(201).json(requisition);
 // //   } catch (error) {
 // //     res.status(500).json({ message: 'Error creating requisition' });
@@ -55,7 +55,7 @@
 // // });
 // router.post('/requisitions', async (req, res) => {
 //     try {
-//       const requisition = await db.jobRequisition.create(req.body);
+//       const requisition = await db.jobrequisition.create(req.body);
       
 //       // Post to job boards if approved
 //       if (req.body.status === 'Approved') {
@@ -278,7 +278,7 @@ const handleError = (res, error, defaultMessage = 'An error occurred') => {
 router.get('/stats', async (req, res) => {
   try {
     const [openPositions, candidates, interviews, hires] = await Promise.all([
-      db.jobRequisition.count({ where: { status: 'Open' } }),
+      db.jobrequisition.count({ where: { status: 'Open' } }),
       db.candidate.count(),
       db.interview.count(),
       db.candidate.count({ where: { status: 'Hired' } })
@@ -297,7 +297,7 @@ router.get('/requisitions', async (req, res) => {
       where.status = req.query.status;
     }
     
-    const requisitions = await db.jobRequisition.findAll({ 
+    const requisitions = await db.jobrequisition.findAll({ 
       where,
       order: [['createdAt', 'DESC']]
     });
@@ -306,7 +306,7 @@ router.get('/requisitions', async (req, res) => {
     handleError(res, error, 'Failed to fetch jobs');
   }
   // try {
-  //   const requisitions = await db.jobRequisition.findAll({
+  //   const requisitions = await db.jobrequisition.findAll({
   //     order: [['createdAt', 'DESC']]
   //   });
   //   res.json(requisitions);
@@ -317,7 +317,7 @@ router.get('/requisitions', async (req, res) => {
 
 router.get('/requisitions/:id', async (req, res) => {
   try {
-    const requisition = await db.jobRequisition.findByPk(req.params.id, {
+    const requisition = await db.jobrequisition.findByPk(req.params.id, {
       include: [{
         model: db.candidate,
         as: 'candidates'
@@ -332,7 +332,7 @@ router.get('/requisitions/:id', async (req, res) => {
 
 router.post('/requisitions', async (req, res) => {
   try {
-    const requisition = await db.jobRequisition.create(req.body);
+    const requisition = await db.jobrequisition.create(req.body);
     res.status(201).json(requisition);
   } catch (error) {
     handleError(res, error, 'Failed to create job');
@@ -341,7 +341,7 @@ router.post('/requisitions', async (req, res) => {
 
 router.put('/requisitions/:id', async (req, res) => {
   try {
-    const requisition = await db.jobRequisition.findByPk(req.params.id);
+    const requisition = await db.jobrequisition.findByPk(req.params.id);
     if (!requisition) return res.status(404).json({ message: 'Job not found' });
     await requisition.update(req.body);
     res.json(requisition);
@@ -355,7 +355,7 @@ router.get('/candidates', async (req, res) => {
   try {
     const candidates = await db.candidate.findAll({
       include: [{
-        model: db.jobRequisition,
+        model: db.jobrequisition,
         as: 'jobRequisition', // Add this
         attributes: ['title']
       }],
@@ -380,7 +380,7 @@ router.get('/candidates', async (req, res) => {
 //     const candidates = await db.candidate.findAll({
 //       where,
 //       include: [{
-//         model: db.jobRequisition,
+//         model: db.jobrequisition,
 //         as: 'jobRequisition',
 //         attributes: ['position', 'department']
 //       }],
@@ -445,7 +445,7 @@ router.get('/interviews', async (req, res) => {
           attributes: ['name', 'email', 'positionApplied', 'applicationDate',  ] 
         },
         { 
-          model: db.jobRequisition, 
+          model: db.jobrequisition, 
           as: 'jobRequisition', // Add this
           attributes: ['title'] 
         }
@@ -485,7 +485,7 @@ router.post('/interviews', async (req, res) => {
     }
 
     // Check if job requisition exists
-    const job = await db.jobRequisition.findByPk(jobRequisitionId);
+    const job = await db.jobrequisition.findByPk(jobRequisitionId);
     if (!job) {
       return res.status(404).json({ message: 'Job requisition not found' });
     }
@@ -561,7 +561,7 @@ router.put('/interviews/:id', async (req, res) => {
 router.post('/interviews/:id/offer', async (req, res) => {
   try {
     const interview = await db.interview.findByPk(req.params.id, {
-      include: [{model: db.candidate, as: 'candidate'}, {model: db.jobRequisition, as: 'jobRequisition'}]
+      include: [{model: db.candidate, as: 'candidate'}, {model: db.jobrequisition, as: 'jobRequisition'}]
     });
     
     if (!interview) return res.status(404).json({ message: 'Interview not found' });
@@ -589,7 +589,7 @@ router.get('/offers', async (req, res) => {
       where: { status: 'Offer' },
       include: [
         { model: db.candidate, as: 'candidate', attributes: ['name', 'email', 'phone'] },
-        { model: db.jobRequisition, as: 'jobRequisition', attributes: ['title', 'salaryRange'] }
+        { model: db.jobrequisition, as: 'jobRequisition', attributes: ['title', 'salaryRange'] }
       ]
     });
     res.json(offers);
@@ -603,7 +603,7 @@ router.post('/offers/:interviewId', async (req, res) => {
     const interview = await db.interview.findByPk(req.params.interviewId, {
       include: [
         { model: db.candidate, as: 'candidate' },
-        { model: db.jobRequisition, as: 'jobRequisition' }
+        { model: db.jobrequisition, as: 'jobRequisition' }
       ]
     });
 

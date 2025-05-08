@@ -15,12 +15,12 @@ const RecruitmentDashboard = ({ stats }) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {pipelineData.map((item, index) => (
+        {/* {pipelineData.map((item, index) => (
           <div key={index} className="bg-white p-4 rounded-lg shadow">
             <h3 className="text-gray-500">{item.name}</h3>
             <p className="text-2xl font-bold">{item.value}</p>
           </div>
-        ))}
+        ))} */}
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow">
