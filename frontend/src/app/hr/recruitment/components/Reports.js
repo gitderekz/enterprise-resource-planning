@@ -103,7 +103,7 @@ const Reports = () => {
                   layout="vertical" 
                   verticalAlign="middle" 
                   align="right"
-                  formatter={(value) => value.replace(/([A-Z])/g, ' $1').trim()}
+                  formatter={(value) => value?.replace(/([A-Z])/g, ' $1').trim()}
                 />
               </PieChart>
             </ResponsiveContainer>

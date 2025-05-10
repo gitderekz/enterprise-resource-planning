@@ -140,9 +140,9 @@ const OfferManagement = () => {
               <tbody>
                 {offers.map((offer) => (
                   <tr key={offer.id}>
-                    <td className="py-2 px-4 border">{offer.candidate.name}</td>
-                    <td className="py-2 px-4 border">{offer.candidate.positionApplied}</td>
-                    <td className="py-2 px-4 border">{new Date(offer.candidate.applicationDate).toLocaleDateString()}</td>
+                    <td className="py-2 px-4 border">{offer.candidate?.name}</td>
+                    <td className="py-2 px-4 border">{offer.candidate?.positionApplied}</td>
+                    <td className="py-2 px-4 border">{new Date(offer.candidate?.applicationDate).toLocaleDateString()}</td>
                     <td className="py-2 px-4 border">
                         <span className={`px-2 py-1 rounded text-xs ${
                           offer.status === 'New' ? 'bg-blue-100 text-blue-800' :
