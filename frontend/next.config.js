@@ -12,21 +12,18 @@ const nextConfig = {
   images: {
     unoptimized: true, // Required for static exports
   },
-  // Add this to handle dynamic routes in static export
+  // Enable this to handle dynamic routes in static export
   skipTrailingSlashRedirect: true,
   
-  // Enable this if you need to redirect in a static export
-  // skipTrailingSlashRedirect: true,
-  
-  // Optional: Add rewrites if you have API routes
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
-      },
-    ]
-  },
+  // // Optional: Add rewrites if you have API routes
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/api/:path*',
+  //       destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+  //     },
+  //   ]
+  // },
 }
 
 module.exports = nextConfig
