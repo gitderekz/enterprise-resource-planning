@@ -47,7 +47,8 @@ server {
 }
 ln -s /etc/nginx/sites-available/enterprise-resource-planning-api.gexperten.tech.conf /etc/nginx/sites-enabled/
 certbot --nginx -d enterprise-resource-planning-api.gexperten.tech
-# MWISHO BACKEND
+
+# FRONTEND
 nano /etc/nginx/sites-available/enterprise-resource-planning.gexperten.tech.conf
 server {
     listen 80;
