@@ -63,115 +63,148 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   );
 }
 
+// function AuthWrapper({ children }: { children: React.ReactNode }) {
+//   const router = useRouter();
+//   const pathname = usePathname();
+//   const dispatch = useDispatch();
+//   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+//   const [loading, setLoading] = useState(true);
+//   const authCheckComplete = useRef(false);
+
+//   useEffect(() => {
+//     if (typeof window === 'undefined') return; // Don't run on server
+    
+//     if (authCheckComplete.current) return;
+//     authCheckComplete.current = true;
+
+//     const verifyAuth = async () => {
+//       // Don't redirect if we're already on an auth route
+//       if (authRoutes.some(route => pathname.startsWith(route))) {
+//         setLoading(false);
+//         return;
+//       }
+
+//       const token = localStorage.getItem('token');
+//       const userString = localStorage.getItem('user');
+//       const refreshToken = localStorage.getItem('refreshToken');
+
+//       if (!token) {
+//         dispatch(logout());
+//         if (!authRoutes.some(route => pathname.startsWith(route))) {
+//           router.push('/login');
+//         }
+//         setLoading(false);
+//         return;
+//       }
+
+//       if (token && userString) {
+//         dispatch(login({
+//           token,
+//           user: JSON.parse(userString)
+//         }));
+//       }
+
+//       try {
+//         await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
+//           headers: { Authorization: `Bearer ${token}` }
+//         });
+//       } catch (error) {
+//         try {
+//           if (!refreshToken) throw new Error('No refresh token available');
+
+//           const response = await axios.post(
+//             `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+//             { refreshToken },
+//             { headers: { Authorization: `Bearer ${token}` } }
+//           );
+
+//           localStorage.setItem('token', response.data.token);
+//           if (response.data.user) {
+//             localStorage.setItem('user', JSON.stringify(response.data.user));
+//           }
+
+//           dispatch(login({
+//             token: response.data.token,
+//             user: response.data.user || JSON.parse(userString || '{}')
+//           }));
+//         } catch (refreshError) {
+//           dispatch(logout());
+//           if (!authRoutes.some(route => pathname.startsWith(route))) {
+//             router.push('/login');
+//           }
+//         }
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     verifyAuth();
+
+//     // const refreshInterval = setInterval(async () => {
+//     //   const refreshToken = localStorage.getItem('refreshToken');
+//     //   if (!refreshToken) return;
+
+//     //   try {
+//     //     const response = await axios.post(
+//     //       `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+//     //       { refreshToken },
+//     //       { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+//     //     );
+
+//     //     localStorage.setItem('token', response.data.token);
+//     //     dispatch(login({
+//     //       token: response.data.token,
+//     //       user: response.data.user || JSON.parse(localStorage.getItem('user') || '{}')
+//     //     }));
+//     //   } catch (error) {
+//     //     console.error('Token refresh failed:', error);
+//     //   }
+//     // }, 15 * 60 * 1000);
+
+//     // return () => clearInterval(refreshInterval);
+//   }, [dispatch, router, pathname]);
+
+//   // if (loading) {
+//   //   return (
+//   //     <div className="flex items-center justify-center min-h-screen">
+//   //       <LoadingSpinner />
+//   //     </div>
+//   //   );
+//   // }
+
+//   // if (!isAuthenticated && !authRoutes.some(route => pathname.startsWith(route))) {
+//   //   return (
+//   //     <div className="flex items-center justify-center min-h-screen">
+//   //       <p>Redirecting to login...</p>
+//   //     </div>
+//   //   );
+//   // }
+
+//   if (typeof window === 'undefined' || loading) {
+//     return <LoadingSpinner />;
+//   }
+
+//   return <>{children}</>;
+// }
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(true);
-  const authCheckComplete = useRef(false);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (authCheckComplete.current) return;
-    authCheckComplete.current = true;
+    const token = localStorage.getItem('token');
+    const isAuthRoute = ['/auth/login', '/auth/register', '/auth/forgot-password'].includes(pathname);
 
-    const verifyAuth = async () => {
-      const token = localStorage.getItem('token');
-      const userString = localStorage.getItem('user');
-      const refreshToken = localStorage.getItem('refreshToken');
+    if (!token && !isAuthRoute) {
+      router.push('/auth/login');
+    } else if (token && isAuthRoute) {
+      router.push('/dashboard');
+    }
+    setLoading(false);
+  }, [pathname, router]);
 
-      if (!token) {
-        dispatch(logout());
-        if (!authRoutes.some(route => pathname.startsWith(route))) {
-          router.push('/login');
-        }
-        setLoading(false);
-        return;
-      }
-
-      if (token && userString) {
-        dispatch(login({
-          token,
-          user: JSON.parse(userString)
-        }));
-      }
-
-      try {
-        await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      } catch (error) {
-        try {
-          if (!refreshToken) throw new Error('No refresh token available');
-
-          const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-            { refreshToken },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          localStorage.setItem('token', response.data.token);
-          if (response.data.user) {
-            localStorage.setItem('user', JSON.stringify(response.data.user));
-          }
-
-          dispatch(login({
-            token: response.data.token,
-            user: response.data.user || JSON.parse(userString || '{}')
-          }));
-        } catch (refreshError) {
-          dispatch(logout());
-          if (!authRoutes.some(route => pathname.startsWith(route))) {
-            router.push('/login');
-          }
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    verifyAuth();
-
-    const refreshInterval = setInterval(async () => {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (!refreshToken) return;
-
-      try {
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-          { refreshToken },
-          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-        );
-
-        localStorage.setItem('token', response.data.token);
-        dispatch(login({
-          token: response.data.token,
-          user: response.data.user || JSON.parse(localStorage.getItem('user') || '{}')
-        }));
-      } catch (error) {
-        console.error('Token refresh failed:', error);
-      }
-    }, 15 * 60 * 1000);
-
-    return () => clearInterval(refreshInterval);
-  }, [dispatch, router, pathname]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated && !authRoutes.some(route => pathname.startsWith(route))) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Redirecting to login...</p>
-      </div>
-    );
-  }
-
+  if (loading) return <LoadingSpinner />;
   return <>{children}</>;
 }
 // *****************************

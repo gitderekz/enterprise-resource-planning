@@ -12,6 +12,8 @@ const nextConfig = {
   images: {
     unoptimized: true, // Required for static exports
   },
+  // Add this to handle dynamic routes in static export
+  skipTrailingSlashRedirect: true,
   
   // Enable this if you need to redirect in a static export
   // skipTrailingSlashRedirect: true,
