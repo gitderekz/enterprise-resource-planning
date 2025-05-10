@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
-import { login } from '../lib/authSlice';
+import { login } from '../../lib/authSlice';
 import Link from 'next/link';
 
 const LoginPage = () => {
