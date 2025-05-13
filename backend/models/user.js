@@ -30,6 +30,26 @@ module.exports = (sequelize, DataTypes) => {
     position: {
       type: DataTypes.STRING,
     },
+    status: {
+      type: DataTypes.ENUM('active', 'inactive', 'on_leave', 'suspended'),
+      defaultValue: 'active',
+    },
+    permissions: {
+      type: DataTypes.ENUM('read', 'write', 'delete', 'approve', 'admin'),
+      defaultValue: 'read',
+    },
+    department: {
+      type: DataTypes.STRING,
+      defaultValue: 'Employee',
+    },
+    gender: {
+      type: DataTypes.ENUM('male','female'),
+      defaultValue: 'male',
+    },
+    employment_type: {
+      type: DataTypes.ENUM('part','contract','permanent'),
+      defaultValue: 'permanent',
+    },
     hireDate: {
       type: DataTypes.DATE,
     }

@@ -45,7 +45,7 @@ const PayrollTable = ({ records, users, onRunPayroll, refreshData }) => {
 
   const getEmployeePosition = (userId) => {
     const user = users.find(u => u.id === userId);
-    return user ? user.position : 'N/A';
+    return user ? user.position??user.role?.name : 'N/A';
   };
 
   return (

@@ -29,6 +29,7 @@ app.use(express.json());
 // === Route Imports ===
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const roleRoutes = require('./routes/roleRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
@@ -42,6 +43,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 // === Mount Routes ===
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/roles', roleRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/invoices', invoiceRoutes);
