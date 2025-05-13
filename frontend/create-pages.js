@@ -27,7 +27,7 @@ menuNames.forEach(name => {
   const pagePath = path.join(folderPath, 'page.js');
   if (!fs.existsSync(pagePath)) {
     fs.writeFileSync(pagePath, `export default function ${folderName.replace(/-./g, m => m[1].toUpperCase())}Page() {
-  return <div>${name} Page</div>;
+  return <div>{`${process.env.NEXT_PUBLIC_CURRENCY}`}{name} Page</div>;
 }
 `);
     console.log(`📝 Created page: ${pagePath}`);

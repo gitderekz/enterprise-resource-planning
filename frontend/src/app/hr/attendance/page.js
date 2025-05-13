@@ -77,7 +77,7 @@ export default function AttendancePage() {
                 <tbody>
                   {lateArrivals.map((employee, index) => (
                     <tr key={index}>
-                      <td className="py-2 px-4 border-b">{employee.name}</td>
+                      <td className="py-2 px-4 border-b">{employee.username}</td>
                       <td className="py-2 px-4 border-b">{employee.lateDays}</td>
                       <td className="py-2 px-4 border-b">{Math.floor(Math.random() * 30) + 5} mins</td>
                       <td className="py-2 px-4 border-b">

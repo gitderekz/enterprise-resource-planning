@@ -75,7 +75,7 @@ export default function InvoicesPage() {
                 <div className="mt-4">
                   <div className="flex justify-between mb-1">
                     <span>Total Outstanding:</span>
-                    <span className="font-bold">$12,450.25</span>
+                    <span className="font-bold">{`${process.env.NEXT_PUBLIC_CURRENCY}`}12,450.25</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Average Days to Pay:</span>
@@ -112,7 +112,7 @@ export default function InvoicesPage() {
                     <tr key={index}>
                       <td className="py-2 px-4 border-b">{invoice.id}</td>
                       <td className="py-2 px-4 border-b">{invoice.client}</td>
-                      <td className="py-2 px-4 border-b">${invoice.amount.toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{invoice.amount.toFixed(2)}</td>
                       <td className="py-2 px-4 border-b">{invoice.date}</td>
                       <td className="py-2 px-4 border-b">{invoice.dueDate}</td>
                       <td className="py-2 px-4 border-b">

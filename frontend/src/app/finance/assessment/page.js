@@ -89,7 +89,7 @@ export default function AssessmentPage() {
               <div style={styles.financialMetrics}>
                 <div style={styles.financialMetric}>
                   <div style={styles.metricTitle}>Net Sales</div>
-                  <div style={styles.metricValue}>${financialData?.netSales || '4.103'} <span style={styles.metricChange}>+2.12%</span></div>
+                  <div style={styles.metricValue}>{`${process.env.NEXT_PUBLIC_CURRENCY}`}{financialData?.netSales || '4.103'} <span style={styles.metricChange}>+2.12%</span></div>
                   <ResponsiveContainer width="100%" height={100}>
                     <BarChart data={netSalesData}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -102,7 +102,7 @@ export default function AssessmentPage() {
                 </div>
                 <div style={styles.financialMetric}>
                   <div style={styles.metricTitle}>Gross Profit</div>
-                  <div style={styles.metricValue}>${financialData?.grossProfit || '3.819'} <span style={styles.metricChange}>+1.40%</span></div>
+                  <div style={styles.metricValue}>{`${process.env.NEXT_PUBLIC_CURRENCY}`}{financialData?.grossProfit || '3.819'} <span style={styles.metricChange}>+1.40%</span></div>
                   <ResponsiveContainer width="100%" height={100}>
                     <BarChart data={grossProfitData}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -115,7 +115,7 @@ export default function AssessmentPage() {
                 </div>
                 <div style={styles.financialMetric}>
                   <div style={styles.metricTitle}>Margin</div>
-                  <div style={styles.metricValue}>${financialData?.margin || '2.500'} <span style={styles.metricChange}>+1.20%</span></div>
+                  <div style={styles.metricValue}>{`${process.env.NEXT_PUBLIC_CURRENCY}`}{financialData?.margin || '2.500'} <span style={styles.metricChange}>+1.20%</span></div>
                   <ResponsiveContainer width="100%" height={100}>
                     <BarChart data={marginData}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -243,7 +243,7 @@ export default function AssessmentPage() {
 //           <div style={styles.financialMetrics}>
 //             <div style={styles.financialMetric}>
 //               <div style={styles.metricTitle}>Net Sales</div>
-//               <div style={styles.metricValue}>$4.103 <span style={styles.metricChange}>+2.12%</span></div>
+//               <div style={styles.metricValue}>{`${process.env.NEXT_PUBLIC_CURRENCY}`}4.103 <span style={styles.metricChange}>+2.12%</span></div>
 //               <ResponsiveContainer width="100%" height={100}>
 //                 <BarChart data={netSalesData}>
 //                   <CartesianGrid strokeDasharray="3 3" />
@@ -256,7 +256,7 @@ export default function AssessmentPage() {
 //             </div>
 //             <div style={styles.financialMetric}>
 //               <div style={styles.metricTitle}>Gross Profit</div>
-//               <div style={styles.metricValue}>$3.819 <span style={styles.metricChange}>+1.40%</span></div>
+//               <div style={styles.metricValue}>{`${process.env.NEXT_PUBLIC_CURRENCY}`}3.819 <span style={styles.metricChange}>+1.40%</span></div>
 //               <ResponsiveContainer width="100%" height={100}>
 //                 <BarChart data={grossProfitData}>
 //                   <CartesianGrid strokeDasharray="3 3" />
@@ -269,7 +269,7 @@ export default function AssessmentPage() {
 //             </div>
 //             <div style={styles.financialMetric}>
 //               <div style={styles.metricTitle}>Margin</div>
-//               <div style={styles.metricValue}>$2.500 <span style={styles.metricChange}>+1.20%</span></div>
+//               <div style={styles.metricValue}>{`${process.env.NEXT_PUBLIC_CURRENCY}`}2.500 <span style={styles.metricChange}>+1.20%</span></div>
 //               <ResponsiveContainer width="100%" height={100}>
 //                 <BarChart data={marginData}>
 //                   <CartesianGrid strokeDasharray="3 3" />

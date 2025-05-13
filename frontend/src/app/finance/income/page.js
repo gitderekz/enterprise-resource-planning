@@ -100,7 +100,7 @@ export default function IncomePage() {
                       {['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023'].map((quarter, i) => (
                         <tr key={i}>
                           <td className="py-2 px-4 border-b">{quarter}</td>
-                          <td className="py-2 px-4 border-b">${(50000 + Math.random() * 50000).toFixed(2)}</td>
+                          <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(50000 + Math.random() * 50000).toFixed(2)}</td>
                           <td className="py-2 px-4 border-b text-green-600">+{(Math.random() * 20).toFixed(1)}%</td>
                         </tr>
                       ))}
@@ -129,7 +129,7 @@ export default function IncomePage() {
                     <tr key={i}>
                       <td className="py-2 px-4 border-b">Product {i + 1}</td>
                       <td className="py-2 px-4 border-b">{Math.floor(Math.random() * 500) + 100}</td>
-                      <td className="py-2 px-4 border-b">${(Math.random() * 10000).toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(Math.random() * 10000).toFixed(2)}</td>
                       <td className="py-2 px-4 border-b text-green-600">{Math.floor(Math.random() * 30) + 10}%</td>
                     </tr>
                   ))}

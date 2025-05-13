@@ -5,10 +5,35 @@ const User = db.user; // use lowercase if model name is defined as 'user'
 // Get all users
 const getUsers = async (req, res) => {
     try {
-        const users = await User.findAll();
+        const users = await User.findAll({
+            include: [{
+                model: db.role,
+                as: 'role'
+            }]
+        });
         res.json(users);
     } catch (err) {
         res.status(500).json({ message: 'Error fetching users', error: err.message });
+    }
+};
+
+// Get employees (users with baseSalary)
+const getEmployees = async (req, res) => {
+    try {
+        const employees = await User.findAll({
+            where: {
+                baseSalary: {
+                    [db.Sequelize.Op.gt]: 0
+                }
+            },
+            include: [{
+                model: db.role,
+                as: 'role'
+            }]
+        });
+        res.json(employees);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching employees', error: err.message });
     }
 };
 
@@ -66,4 +91,4 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = { getUsers, getUserById, updateUser, deleteUser };
+module.exports = { getUsers, getUserById, updateUser, deleteUser, getEmployees };

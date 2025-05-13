@@ -23,6 +23,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    baseSalary: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0,
+    },
+    position: {
+      type: DataTypes.STRING,
+    },
+    hireDate: {
+      type: DataTypes.DATE,
+    }
   });
 
   user.associate = function(models) {
@@ -31,6 +41,15 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'role_id',
       as: 'role',
     });
+    user.hasMany(models.payroll, {
+      foreignKey: 'userId',
+      as: 'payrolls',
+    });
+    user.hasMany(models.deduction, {
+      foreignKey: 'userId',
+      as: 'deductions',
+    });
+
     // user.hasMany(models.invoice, {
     //   foreignKey: 'user_id',
     //   as: 'invoices',  

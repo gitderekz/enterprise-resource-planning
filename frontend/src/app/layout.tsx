@@ -72,7 +72,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
   const authCheckComplete = useRef(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return; // Don't run on server
+    // if (typeof window === 'undefined') return; // Don't run on server
     
     if (authCheckComplete.current) return;
     authCheckComplete.current = true;

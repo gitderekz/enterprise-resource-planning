@@ -67,7 +67,7 @@ export default function CashInsightsPage() {
               {accountBalances.map((account, index) => (
                 <div key={index} className="border rounded-lg p-4">
                   <h3 className="font-medium">{account.name}</h3>
-                  <p className="text-2xl mt-2">${account.balance.toLocaleString()}</p>
+                  <p className="text-2xl mt-2">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{account.balance.toLocaleString()}</p>
                 </div>
               ))}
             </div>
@@ -90,9 +90,9 @@ export default function CashInsightsPage() {
                   {[...Array(5)].map((_, i) => (
                     <tr key={i}>
                       <td className="py-2 px-4 border-b">{new Date(Date.now() + i * 86400000).toLocaleDateString()}</td>
-                      <td className="py-2 px-4 border-b text-green-600">${(Math.random() * 10000).toFixed(2)}</td>
-                      <td className="py-2 px-4 border-b text-red-600">${(Math.random() * 8000).toFixed(2)}</td>
-                      <td className="py-2 px-4 border-b">${(125000 + i * 2000).toLocaleString()}</td>
+                      <td className="py-2 px-4 border-b text-green-600">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(Math.random() * 10000).toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b text-red-600">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(Math.random() * 8000).toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(125000 + i * 2000).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>

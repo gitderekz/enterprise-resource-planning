@@ -57,7 +57,7 @@ export default function ReceiptsPage() {
                 >
                   <CartesianGrid />
                   <XAxis dataKey="date" name="Date" />
-                  <YAxis dataKey="amount" name="Amount ($)" />
+                  <YAxis dataKey="amount" name="Amount ({`${process.env.NEXT_PUBLIC_CURRENCY}`})" />
                   <ZAxis dataKey="category" name="Category" range={[50, 300]} />
                   <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                   <Legend />
@@ -77,7 +77,7 @@ export default function ReceiptsPage() {
                     <div key={index} className="border-b pb-2">
                       <div className="flex justify-between mb-1">
                         <span>{category.category}</span>
-                        <span>${category.amount}</span>
+                        <span>{`${process.env.NEXT_PUBLIC_CURRENCY}`}{category.amount}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div 
@@ -106,7 +106,7 @@ export default function ReceiptsPage() {
                         <tr key={index}>
                           <td className="py-2 px-4 border-b">{receipt.date}</td>
                           <td className="py-2 px-4 border-b">{receipt.vendor}</td>
-                          <td className="py-2 px-4 border-b">${receipt.amount}</td>
+                          <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{receipt.amount}</td>
                           <td className="py-2 px-4 border-b">
                             <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
                               Processed

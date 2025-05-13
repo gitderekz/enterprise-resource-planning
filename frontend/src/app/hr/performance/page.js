@@ -74,7 +74,7 @@ export default function PerformancePage() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-medium">{employee.name}</h3>
+                      <h3 className="font-medium">{employee.username}</h3>
                       <p className="text-sm text-gray-600">{employee.position}</p>
                     </div>
                   </div>

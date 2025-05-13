@@ -101,9 +101,9 @@ export default function ExpensesPage() {
                     return (
                       <tr key={i}>
                         <td className="py-2 px-4 border-b">{dept}</td>
-                        <td className="py-2 px-4 border-b">${budget.toFixed(2)}</td>
-                        <td className="py-2 px-4 border-b text-red-600">${spent.toFixed(2)}</td>
-                        <td className="py-2 px-4 border-b text-green-600">${(budget - spent).toFixed(2)}</td>
+                        <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{budget.toFixed(2)}</td>
+                        <td className="py-2 px-4 border-b text-red-600">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{spent.toFixed(2)}</td>
+                        <td className="py-2 px-4 border-b text-green-600">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(budget - spent).toFixed(2)}</td>
                         <td className="py-2 px-4 border-b">{(spent/budget*100).toFixed(1)}%</td>
                       </tr>
                     );
