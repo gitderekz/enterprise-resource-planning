@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const db = require('../models');
 const User = db.user; // use lowercase if model name is defined as 'user'
 const ExcelJS = require('exceljs');
@@ -19,7 +20,36 @@ const getUsers = async (req, res) => {
         res.status(500).json({ message: 'Error fetching users', error: err.message });
     }
 };
+// Create a user
+const createUser = async (req, res) => {
+    const { username, email, password, role_id, status, permissions  } = req.body;
+    console.log("permissions[0]",permissions[0]);
 
+    try {
+        // Check if user already exists
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create user
+        const user = await User.create({
+            username,
+            email,
+            password: hashedPassword,
+            role_id,
+            status,
+            permissions:permissions[0]//JSON.stringify(permissions)
+        });
+
+        res.status(201).json({ message: 'User registered successfully', user });
+    } catch (err) {
+        res.status(500).json({ message: 'Error registering user', error: err.message });
+    }
+};
 // Get a single user by ID
 const getUserById = async (req, res) => {
     const { id } = req.params;
@@ -293,128 +323,6 @@ const bulkUpdateUsers = async (req, res) => {
   }
 };
 
-// // Generate report
-// const generateReport = async (req, res) => {
-//   const { reportType, format, startDate, endDate } = req.body;
-
-//   try {
-//     let data;
-//     let filename;
-    
-//     switch(reportType) {
-//       case 'employee_list':
-//         data = await User.findAll({
-//           include: [{ model: db.role, as: 'role' }],
-//           where: {
-//             createdAt: {
-//               [Sequelize.Op.between]: [startDate, endDate]
-//             }
-//           }
-//         });
-//         filename = `employee-list-${new Date().toISOString().split('T')[0]}`;
-//         break;
-        
-//       case 'attendance':
-//         // Implement attendance report logic
-//         break;
-        
-//       // Add other report types...
-        
-//       default:
-//         return res.status(400).json({ message: 'Invalid report type' });
-//     }
-
-//     // Generate the report based on format
-//     switch(format) {
-//       case 'pdf':
-//         // Generate PDF
-//         break;
-//       case 'excel':
-//         // Generate Excel
-//         break;
-//       case 'csv':
-//         // Generate CSV
-//         break;
-//       default:
-//         return res.status(400).json({ message: 'Invalid format' });
-//     }
-
-//     // Return the generated report
-//     res.json({ message: 'Report generated successfully', filename });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Error generating report', error: err.message });
-//   }
-// };
-const generateReport = async (req, res) => {
-  const { reportType, format, startDate, endDate } = req.body;
-
-  try {
-    let data;
-    let filename = `${reportType}_${startDate}_to_${endDate}.${format}`;
-    
-    // Get report data based on type
-    switch(reportType) {
-      case 'employee_list':
-        data = await db.user.findAll({
-          include: [{ model: db.role, as: 'role' }],
-          where: {
-            createdAt: {
-              [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
-            }
-          }
-        });
-        break;
-        
-      case 'attendance':
-        // Implement attendance report logic
-        break;
-        
-      // Add other report types...
-        
-      default:
-        return res.status(400).json({ message: 'Invalid report type' });
-    }
-
-    // Generate the report based on format
-    let reportContent;
-    switch(format) {
-      case 'pdf':
-        // Generate PDF (using a PDF library like pdfkit)
-        reportBuffer = await generatePDF(data);
-        break;
-      case 'excel':
-        // Generate Excel (using a library like exceljs)
-        reportBuffer = await generateExcel(data);
-        break;
-      case 'csv':
-        // Generate CSV
-        reportContent = generateCSV(data);
-        break;
-      default:
-        return res.status(400).json({ message: 'Invalid format' });
-    }
-    
-    if (!reportContent) {
-      return res.status(500).json({ message: 'Failed to generate report content' });
-    }
-    // Save report to database
-    const report = await db.report.create({
-      name: `${reportType.replace('_', ' ')} Report`,
-      filename,
-      format,
-      size: reportContent.length,
-      userId: req.user.id
-    });
-
-    // Return the generated report
-    res.setHeader('Content-Type', `application/${format}`);
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-    res.send(reportContent);
-  } catch (err) {
-    res.status(500).json({ message: 'Error generating report', error: err.message });
-  }
-};
-
 // Get recent reports
 const getRecentReports = async (req, res) => {
   try {
@@ -449,13 +357,398 @@ const deleteReport = async (req, res) => {
   }
 };
 
-// Helper function to generate CSV
+// // // Generate report
+// // const generateReport = async (req, res) => {
+// //   const { reportType, format, startDate, endDate } = req.body;
+
+// //   try {
+// //     let data;
+// //     let filename;
+    
+// //     switch(reportType) {
+// //       case 'employee_list':
+// //         data = await User.findAll({
+// //           include: [{ model: db.role, as: 'role' }],
+// //           where: {
+// //             createdAt: {
+// //               [Sequelize.Op.between]: [startDate, endDate]
+// //             }
+// //           }
+// //         });
+// //         filename = `employee-list-${new Date().toISOString().split('T')[0]}`;
+// //         break;
+        
+// //       case 'attendance':
+// //         // Implement attendance report logic
+// //         break;
+        
+// //       // Add other report types...
+        
+// //       default:
+// //         return res.status(400).json({ message: 'Invalid report type' });
+// //     }
+
+// //     // Generate the report based on format
+// //     switch(format) {
+// //       case 'pdf':
+// //         // Generate PDF
+// //         break;
+// //       case 'excel':
+// //         // Generate Excel
+// //         break;
+// //       case 'csv':
+// //         // Generate CSV
+// //         break;
+// //       default:
+// //         return res.status(400).json({ message: 'Invalid format' });
+// //     }
+
+// //     // Return the generated report
+// //     res.json({ message: 'Report generated successfully', filename });
+// //   } catch (err) {
+// //     res.status(500).json({ message: 'Error generating report', error: err.message });
+// //   }
+// // };
+// const generateReport = async (req, res) => {
+//   const { reportType, format, startDate, endDate } = req.body;
+
+//   try {
+//     let data;
+//     let filename = `${reportType}_${startDate}_to_${endDate}.${format}`;
+    
+//     // Get report data based on type
+//     switch(reportType) {
+//       case 'employee_list':
+//         data = await db.user.findAll({
+//           include: [{ model: db.role, as: 'role' }],
+//           where: {
+//             createdAt: {
+//               [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
+//             }
+//           }
+//         });
+//         break;
+        
+//       case 'attendance':
+//         // Implement attendance report logic
+//         break;
+        
+//       // Add other report types...
+        
+//       default:
+//         return res.status(400).json({ message: 'Invalid report type' });
+//     }
+
+//     // Generate the report based on format
+//     let reportContent;
+//     switch(format) {
+//       case 'pdf':
+//         // Generate PDF (using a PDF library like pdfkit)
+//         reportBuffer = await generatePDF(data);
+//         break;
+//       case 'excel':
+//         // Generate Excel (using a library like exceljs)
+//         reportBuffer = await generateExcel(data);
+//         break;
+//       case 'csv':
+//         // Generate CSV
+//         reportContent = generateCSV(data);
+//         break;
+//       default:
+//         return res.status(400).json({ message: 'Invalid format' });
+//     }
+    
+//     if (!reportContent) {
+//       return res.status(500).json({ message: 'Failed to generate report content' });
+//     }
+//     // Save report to database
+//     const report = await db.report.create({
+//       name: `${reportType.replace('_', ' ')} Report`,
+//       filename,
+//       format,
+//       size: reportContent.length,
+//       userId: req.user.id
+//     });
+
+//     // Return the generated report
+//     res.setHeader('Content-Type', `application/${format}`);
+//     res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+//     res.send(reportContent);
+//   } catch (err) {
+//     res.status(500).json({ message: 'Error generating report', error: err.message });
+//   }
+// };
+
+// // Helper function to generate CSV
+// const generateCSV = (data) => {
+//   if (!data || data.length === 0) return '';
+  
+//   const headers = Object.keys(data[0].dataValues).join(',');
+//   const rows = data.map(item => 
+//     Object.values(item.dataValues)
+//       .map(val => typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val)
+//       .join(',')
+//   );
+  
+//   return [headers, ...rows].join('\n');
+// };
+
+// async function generateExcel(data) {
+//   const workbook = new ExcelJS.Workbook();
+//   const worksheet = workbook.addWorksheet('Report');
+
+//   if (!data || data.length === 0) return null;
+
+//   worksheet.columns = Object.keys(data[0]).map(key => ({
+//     header: key,
+//     key,
+//     width: 20
+//   }));
+
+//   data.forEach(row => worksheet.addRow(row));
+
+//   return await workbook.xlsx.writeBuffer(); // returns a Buffer
+// }
+
+
+// async function generatePDF(data) {
+//   if (!data || data.length === 0) return null;
+
+//   const getStream = (await import('get-stream')).default;
+
+//   const doc = new PDFDocument();
+//   const passthrough = new stream.PassThrough();
+//   doc.pipe(passthrough);
+
+//   // Headers
+//   const keys = Object.keys(data[0]);
+//   doc.fontSize(12).text(keys.join(' | '), { underline: true });
+
+//   // Rows
+//   data.forEach(row => {
+//     const values = keys.map(k => row[k]);
+//     doc.text(values.join(' | '));
+//   });
+
+//   doc.end();
+
+//   // ❌ Incorrect: getStream.buffer(...)
+//   // ✅ Correct:
+//   return await getStream(passthrough);
+// }
+// // async function generatePDF(data) {
+// //   return new Promise((resolve, reject) => {
+// //     const PDFDocument = require('pdfkit');
+// //     const doc = new PDFDocument();
+// //     const stream = require('stream');
+// //     const passthrough = new stream.PassThrough();
+
+// //     doc.pipe(passthrough);
+
+// //     const keys = Object.keys(data[0]);
+// //     doc.fontSize(12).text(keys.join(' | '), { underline: true });
+
+// //     data.forEach(row => {
+// //       const values = keys.map(k => row[k]);
+// //       doc.text(values.join(' | '));
+// //     });
+
+// //     doc.end();
+
+// //     streamToBuffer(passthrough, (err, buffer) => {
+// //       if (err) return reject(err);
+// //       resolve(buffer);
+// //     });
+// //   });
+// // }
+
+const generateReport = async (req, res) => {
+  const { reportType, format, startDate, endDate } = req.body;
+
+  try {
+    let data;
+    let filename = `${reportType}_${startDate}_to_${endDate}.${format}`;
+    const reportName = `${reportType.replace('_', ' ')} Report (${startDate} to ${endDate})`;
+    
+    // Get report data
+    data = await db.user.findAll({
+      include: [{ model: db.role, as: 'role' }],
+      where: {
+        createdAt: {
+          [db.Sequelize.Op.between]: [new Date(startDate), new Date(endDate)]
+        }
+      },
+      raw: true
+    });
+
+    // Format data for reports
+    const formattedData = data.map(user => ({
+      ID: user.id,
+      Username: user.username,
+      Email: user.email,
+      Role: user['role.name'],
+      Status: user.status,
+      Department: user.department,
+      'Hire Date': new Date(user.hireDate).toLocaleDateString()
+    }));
+
+    // Create report record first
+    const report = await db.report.create({
+      name: reportName,
+      filename,
+      format,
+      size: 0, // Will be updated after generation
+      userId: req.user.id
+    });
+
+    // Generate report based on format
+    switch(format) {
+      case 'pdf':
+        const pdfDoc = generatePDFReport(formattedData, reportName);
+        
+        // Collect PDF data to calculate size
+        const pdfChunks = [];
+        pdfDoc.on('data', chunk => pdfChunks.push(chunk));
+        pdfDoc.on('end', async () => {
+          const pdfBuffer = Buffer.concat(pdfChunks);
+          // Update report with actual size
+          await report.update({ size: pdfBuffer.length });
+        });
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+        pdfDoc.pipe(res);
+        pdfDoc.end();
+        break;
+
+      case 'excel':
+        const excelBuffer = await generateExcelReport(formattedData, reportName);
+        await report.update({ size: excelBuffer.length });
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+        res.send(excelBuffer);
+        break;
+
+      case 'csv':
+        const csvData = generateCSV(formattedData);
+        await report.update({ size: Buffer.byteLength(csvData) });
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+        res.send(csvData);
+        break;
+
+      default:
+        return res.status(400).json({ message: 'Invalid format' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: 'Error generating report', error: err.message });
+  }
+};
+
+// Helper functions (add these to the same file)
+const generatePDFReport = (data, title) => {
+  const PDFDocument = require('pdfkit');
+  const doc = new PDFDocument({ margin: 30 });
+  
+  // Title
+  doc.fontSize(18).text(title, { align: 'center' });
+  doc.moveDown();
+  
+  if (data.length === 0) {
+    doc.text('No data available');
+    return doc;
+  }
+
+  const headers = Object.keys(data[0]);
+  const columnWidth = (doc.page.width - 60) / headers.length; // Equal width columns
+  
+  // Table headers
+  doc.font('Helvetica-Bold');
+  headers.forEach((header, i) => {
+    doc.text(header, 30 + (i * columnWidth), doc.y, {
+      width: columnWidth,
+      align: 'left'
+    });
+  });
+  doc.moveDown();
+  
+  // Horizontal line
+  doc.moveTo(30, doc.y)
+     .lineTo(doc.page.width - 30, doc.y)
+     .stroke();
+  doc.moveDown(0.5);
+  
+  // Table rows
+  doc.font('Helvetica');
+  data.forEach(row => {
+    let startY = doc.y;
+    let maxHeight = 0;
+    
+    headers.forEach((header, i) => {
+      const textHeight = doc.heightOfString(String(row[header] || ''), {
+        width: columnWidth
+      });
+      maxHeight = Math.max(maxHeight, textHeight);
+      
+      doc.text(String(row[header] || ''), 30 + (i * columnWidth), startY, {
+        width: columnWidth,
+        align: 'left'
+      });
+    });
+    
+    doc.y = startY + maxHeight + 10;
+    
+    // Horizontal line between rows
+    doc.moveTo(30, doc.y - 5)
+       .lineTo(doc.page.width - 30, doc.y - 5)
+       .stroke();
+  });
+  
+  return doc;
+};
+
+const generateExcelReport = async (data, title) => {
+  const ExcelJS = require('exceljs');
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet(title);
+
+  // Add headers
+  if (data.length > 0) {
+    const headers = Object.keys(data[0]);
+    worksheet.addRow(headers);
+
+    // Style headers
+    worksheet.getRow(1).eachCell(cell => {
+      cell.font = { bold: true };
+    });
+
+    // Add data rows
+    data.forEach(row => {
+      worksheet.addRow(Object.values(row));
+    });
+
+    // Auto-fit columns
+    worksheet.columns.forEach(column => {
+      let maxLength = 0;
+      column.eachCell({ includeEmpty: true }, cell => {
+        const columnLength = cell.value ? cell.value.toString().length : 10;
+        if (columnLength > maxLength) {
+          maxLength = columnLength;
+        }
+      });
+      column.width = maxLength < 10 ? 10 : maxLength;
+    });
+  }
+
+  return workbook.xlsx.writeBuffer();
+};
+
 const generateCSV = (data) => {
   if (!data || data.length === 0) return '';
   
-  const headers = Object.keys(data[0].dataValues).join(',');
+  const headers = Object.keys(data[0]).join(',');
   const rows = data.map(item => 
-    Object.values(item.dataValues)
+    Object.values(item)
       .map(val => typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val)
       .join(',')
   );
@@ -463,78 +756,10 @@ const generateCSV = (data) => {
   return [headers, ...rows].join('\n');
 };
 
-async function generateExcel(data) {
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Report');
-
-  if (!data || data.length === 0) return null;
-
-  worksheet.columns = Object.keys(data[0]).map(key => ({
-    header: key,
-    key,
-    width: 20
-  }));
-
-  data.forEach(row => worksheet.addRow(row));
-
-  return await workbook.xlsx.writeBuffer(); // returns a Buffer
-}
-
-
-async function generatePDF(data) {
-  if (!data || data.length === 0) return null;
-
-  const getStream = (await import('get-stream')).default;
-
-  const doc = new PDFDocument();
-  const passthrough = new stream.PassThrough();
-  doc.pipe(passthrough);
-
-  // Headers
-  const keys = Object.keys(data[0]);
-  doc.fontSize(12).text(keys.join(' | '), { underline: true });
-
-  // Rows
-  data.forEach(row => {
-    const values = keys.map(k => row[k]);
-    doc.text(values.join(' | '));
-  });
-
-  doc.end();
-
-  // ❌ Incorrect: getStream.buffer(...)
-  // ✅ Correct:
-  return await getStream(passthrough);
-}
-// async function generatePDF(data) {
-//   return new Promise((resolve, reject) => {
-//     const PDFDocument = require('pdfkit');
-//     const doc = new PDFDocument();
-//     const stream = require('stream');
-//     const passthrough = new stream.PassThrough();
-
-//     doc.pipe(passthrough);
-
-//     const keys = Object.keys(data[0]);
-//     doc.fontSize(12).text(keys.join(' | '), { underline: true });
-
-//     data.forEach(row => {
-//       const values = keys.map(k => row[k]);
-//       doc.text(values.join(' | '));
-//     });
-
-//     doc.end();
-
-//     streamToBuffer(passthrough, (err, buffer) => {
-//       if (err) return reject(err);
-//       resolve(buffer);
-//     });
-//   });
-// }
-
 // Add these to module.exports
 module.exports = { 
   getUsers, 
+  createUser, 
   getUserById, 
   updateUser, 
   deleteUser, 

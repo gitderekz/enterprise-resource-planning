@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": null,
-    "database": "medicine_factory",
+    "database": "enterprise_resource_planning",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },

@@ -5,7 +5,7 @@ import { updateEmployee, bulkUpdateEmployees, createEmployee } from '../services
 import { getRoles } from '../services/roleService';
 import { toast } from 'react-toastify';
 
-const UserManagement = ({ selectedEmployees, refreshEmployees }) => {
+const UserManagement = ({ selectedEmployees, refreshEmployees, selectedUser, setSelectedUser}) => {
   const [activeTab, setActiveTab] = useState('edit');
   const [editMode, setEditMode] = useState('single');
   const [userData, setUserData] = useState({
@@ -25,7 +25,7 @@ const UserManagement = ({ selectedEmployees, refreshEmployees }) => {
   });
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  // const [selectedUser, setSelectedUser] = useState(null);
 
   const permissions = ['read', 'write', 'delete', 'approve', 'admin'];
 
@@ -96,6 +96,7 @@ const UserManagement = ({ selectedEmployees, refreshEmployees }) => {
       
       refreshEmployees();
       resetForm();
+      setSelectedUser(null);
     } catch (error) {
       toast.error(error.message || 'Failed to save user');
     } finally {

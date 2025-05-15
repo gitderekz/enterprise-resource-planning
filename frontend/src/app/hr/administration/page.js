@@ -27,7 +27,19 @@ export default function AdministrationPage() {
   const [employeeStats, setEmployeeStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+// Add to the existing state declarations
+const [selectedUser, setSelectedUser] = useState(null);
 
+// Create fetchEmployees function
+const fetchEmployees = async () => {
+  try {
+    const stats = await getEmployeeStats();
+    // const stats = await getEmployees();
+    setEmployeeStats(stats);
+  } catch (err) {
+    setError(err.message);
+  }
+};
   // Stats cards data
   const statsCards = employeeStats ? [
     { title: 'Total Employees', value: employeeStats.total, icon: <FaUsers />, color: 'bg-blue-100 text-blue-600' },
@@ -245,7 +257,8 @@ export default function AdministrationPage() {
           {activeTab === 'employees' && (
             <div className="bg-white p-6 rounded-lg shadow">
               <EmployeeTable 
-                onSelectEmployees={setSelectedEmployees} 
+                onSelectEmployees={setSelectedEmployees}
+                onEditUser={() => setActiveTab('management')}
               />
             </div>
           )}
@@ -253,7 +266,12 @@ export default function AdministrationPage() {
           {/* User Management Tab */}
           {activeTab === 'management' && (
             <div className="bg-white p-6 rounded-lg shadow">
-              <UserManagement selectedEmployees={selectedEmployees} />
+              <UserManagement 
+                selectedEmployees={selectedEmployees}
+                refreshEmployees={fetchEmployees}
+                selectedUser={selectedUser}
+                setSelectedUser={setSelectedUser}
+              />
             </div>
           )}
 

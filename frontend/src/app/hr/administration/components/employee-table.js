@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { FaSearch, FaFilter, FaUserEdit, FaUserTimes, FaUserCheck } from 'react-icons/fa';
 import { getEmployees } from '../services/employeeService';
 
-const EmployeeTable = ({ onSelectEmployees }) => {
+const EmployeeTable = ({ onSelectEmployees, onEditUser }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
   const [filters, setFilters] = useState({
     status: 'all',
     department: 'all',
@@ -200,8 +201,13 @@ const EmployeeTable = ({ onSelectEmployees }) => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="checkbox"
-                      checked={onSelectEmployees && Array.isArray(onSelectEmployees) && onSelectEmployees.includes(employee.id)}
-                      onChange={(e) => handleSelectEmployee(employee.id, e.target.checked)}
+                      checked={selectedUser?.id === employee.id}
+                      onChange={() => {
+                        setSelectedUser(selectedUser?.id === employee.id ? null : employee);
+                        onSelectEmployees(selectedUser?.id === employee.id ? [] : [employee.id]);
+                      }}
+                      // checked={onSelectEmployees && Array.isArray(onSelectEmployees) && onSelectEmployees.includes(employee.id)}
+                      // onChange={(e) => handleSelectEmployee(employee.id, e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                   </td>
@@ -240,10 +246,32 @@ const EmployeeTable = ({ onSelectEmployees }) => {
                     {employee.hireDate ? new Date(employee.hireDate).toLocaleDateString() : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button className="text-blue-600 hover:text-blue-900 mr-3">
+                    <button 
+                      className="text-blue-600 hover:text-blue-900 mr-3"
+                      onClick={() => {
+                        setSelectedUser(employee);
+                        onSelectEmployees([employee.id]);
+                        onEditUser && onEditUser(); // Call the onEditUser function if provided
+                      }}
+                    >
                       <FaUserEdit />
                     </button>
-                    <button className="text-red-600 hover:text-red-900">
+                    <button 
+                      className="text-red-600 hover:text-red-900"
+                      onClick={async () => {
+                        if (window.confirm(`Are you sure you want to delete ${employee.username}?`)) {
+                          try {
+                            await deleteEmployee(employee.id);
+                            toast.success('Employee deleted successfully');
+                            refreshEmployees();
+                            setSelectedUser(null);
+                            onSelectEmployees([]);
+                          } catch (error) {
+                            toast.error('Failed to delete employee');
+                          }
+                        }
+                      }}
+                    >
                       <FaUserTimes />
                     </button>
                   </td>

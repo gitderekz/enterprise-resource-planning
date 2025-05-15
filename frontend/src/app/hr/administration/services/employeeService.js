@@ -73,3 +73,31 @@ export const generateReport = async (reportData) => {
     throw error;
   }
 };
+
+export const createEmployee = async (employeeData) => {
+  try {
+    const response = await axios.post(`${API_URL}/users`, employeeData, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating employee:', error);
+    throw error;
+  }
+};
+
+export const deleteEmployee = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/users/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting employee:', error);
+    throw error;
+  }
+};
