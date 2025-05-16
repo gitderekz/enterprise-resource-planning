@@ -10,6 +10,7 @@ import { useSharedStyles } from '../sharedStyles';
 import { usePathname } from 'next/navigation';
 import { MenuContext } from '../lib/MenuContext';
 import { useSidebar } from '../lib/SidebarContext';
+import { FaSearch, FaBell, FaCog, FaUserCircle, FaPlus, FaFileExport, FaExchangeAlt, FaCalendarAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const taskStatusData = [
@@ -29,7 +30,25 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const { socket, sendMessage } = useWebSocket();
   const [updatingTaskIds, setUpdatingTaskIds] = useState([]);
+  const [activeTab, setActiveTab] = useState('tasks');
+  const [timeOffRequests, setTimeOffRequests] = useState([]);
 
+  const [newRequest, setNewRequest] = useState({
+    startDate: '',
+    endDate: '',
+    reason: ''
+  });
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [user, setUser] = useState(null);
+
+
+  useState(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  },[])
+    
   useEffect(() => {
     if (socket) {
       socket.onmessage = (event) => {
@@ -46,12 +65,19 @@ export default function TasksPage() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        setTasks(response.data);
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        const currentUserId = storedUser?.id;
+
+        const [timetableRes, tasks] = await Promise.all([
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/timetable/time-off/${currentUserId}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          }),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, {
+            headers: {'Authorization': `Bearer ${localStorage.getItem('token')}`,},
+          })
+        ]);
+        setTimeOffRequests(timetableRes.data.timeOffRequests || []);
+        setTasks(tasks.data);
       } catch (error) {
         toast.error('Failed to load tasks');
         console.error('Error fetching tasks:', error);
@@ -156,6 +182,30 @@ export default function TasksPage() {
     }
   };
 
+  // Handle time off request creation
+  const handleCreateRequest = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/timetable/time-off`,
+        newRequest,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+      );
+
+      setTimeOffRequests(prev => [...prev, response.data]);
+      setShowRequestModal(false);
+      setNewRequest({
+        startDate: '',
+        endDate: '',
+        reason: ''
+      });
+      toast.success('Time off request submitted');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit request');
+    }
+  };
+
   return (
     <div style={styles.container}>
       <Header />
@@ -168,8 +218,25 @@ export default function TasksPage() {
           transition: 'all 0.3s ease',
         }}>
           <h1 style={styles.pageTitle}>{pageTitle}</h1>
+        
+          {/* Tab Navigation */}
+          <div className="flex border-b border-gray-200 mb-6">
+            <button
+              className={`py-2 px-4 font-medium ${activeTab === 'tasks' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
+              onClick={() => setActiveTab('tasks')}
+            >
+              Tasks
+            </button>
+            <button
+              className={`py-2 px-4 font-medium ${activeTab === 'timeoff' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
+              onClick={() => setActiveTab('timeoff')}
+            >
+              Time Off Requests
+            </button>
+          </div>
 
           {/* Task Overview */}
+          {activeTab === 'tasks' && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Task Overview</h2>
@@ -200,8 +267,10 @@ export default function TasksPage() {
               </ResponsiveContainer>
             </div>
           </div>
+          )}
 
           {/* Task List */}
+          {activeTab === 'tasks' && (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-4">Task List</h2>
             {loading ? (
@@ -267,6 +336,131 @@ export default function TasksPage() {
               </div>
             )}
           </div>
+          )}
+          
+          {/* Time Off Requests Tab */}
+          {activeTab === 'timeoff' && (
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Time Off Requests</h2>
+                <button 
+                  onClick={() => setShowRequestModal(true)}
+                  className="flex items-center px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  <FaPlus className="mr-1" /> New Request
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b">Employee</th>
+                      <th className="py-2 px-4 border-b">Dates</th>
+                      <th className="py-2 px-4 border-b">Reason</th>
+                      <th className="py-2 px-4 border-b">Status</th>
+                      {user.role?.name==='hr' && 
+                      (<th className="py-2 px-4 border-b">Action</th>)
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {timeOffRequests.map((request, index) => (
+                      <tr key={index}>
+                        <td className="py-2 px-4 border-b">{request.user?.username || 'Unknown'}</td>
+                        <td className="py-2 px-4 border-b">
+                          {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()}
+                        </td>
+                        <td className="py-2 px-4 border-b">{request.reason}</td>
+                        <td className="py-2 px-4 border-b">
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {request.status}
+                          </span>
+                        </td>
+                        {user.role?.name==='hr' && (
+                          <td className="py-2 px-4 border-b">
+                            {request.status === 'pending' && (
+                              <>
+                                <button 
+                                  onClick={() => handleApproveRequest(request.id, true)}
+                                  className="text-green-600 hover:underline mr-2"
+                                >
+                                  Approve
+                                </button>
+                                <button 
+                                  onClick={() => handleApproveRequest(request.id, false)}
+                                  className="text-red-600 hover:underline"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            )}
+                          </td>
+                          )
+                        }
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Time Off Request Modal */}
+          {showRequestModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg w-full max-w-md">
+                <h2 className="text-xl font-semibold mb-4">New Time Off Request</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Start Date</label>
+                    <input
+                      type="date"
+                      className="w-full p-2 border rounded"
+                      value={newRequest.startDate}
+                      onChange={(e) => setNewRequest({...newRequest, startDate: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">End Date</label>
+                    <input
+                      type="date"
+                      className="w-full p-2 border rounded"
+                      value={newRequest.endDate}
+                      onChange={(e) => setNewRequest({...newRequest, endDate: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Reason</label>
+                    <textarea
+                      className="w-full p-2 border rounded"
+                      value={newRequest.reason}
+                      onChange={(e) => setNewRequest({...newRequest, reason: e.target.value})}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2 mt-4">
+                  <button
+                    onClick={() => setShowRequestModal(false)}
+                    className="px-3 py-1 border rounded hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateRequest}
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Submit Request
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

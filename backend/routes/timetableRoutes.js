@@ -5,6 +5,7 @@ const {
   updateShift,
   deleteShift,
   getShiftCoverage,
+  getUserTimeOffRequest,
   createTimeOffRequest,
   approveTimeOffRequest,
   createShiftSwap,
@@ -24,6 +25,7 @@ router.post('/shift-swap', auth, createShiftSwap);
 router.get('/coverage', auth, getShiftCoverage);
 
 // Time off requests
+router.get('/time-off/:id', auth, getUserTimeOffRequest);
 router.post('/time-off', auth, createTimeOffRequest);
 router.put('/time-off/:id/approve', auth, approveTimeOffRequest);
 

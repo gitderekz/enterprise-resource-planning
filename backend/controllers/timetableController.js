@@ -233,6 +233,36 @@ const createTimeOffRequest = async (req, res) => {
   }
 };
 
+// Get time off request
+const getUserTimeOffRequest = async (req, res) => {
+  try {
+    // const { id } = req.query;
+    const userId = req.user.id;
+
+    const timeOffRequests = await db.timeOffRequest.findAll({
+      where: {
+        userId,
+        status: {
+          [Op.in]: ['pending', 'approved']
+        }
+      },
+      include: {
+        model: db.user,
+        as: 'user',
+        attributes: ['username', 'email'],
+        include:{ model: db.role, as: 'role' }
+      }
+    });
+
+
+    res.json({
+      timeOffRequests
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching time off request', error: err.message });
+  }
+};
+
 // Approve time off request
 const approveTimeOffRequest = async (req, res) => {
   try {
@@ -661,6 +691,7 @@ module.exports = {
   updateShift,
   deleteShift,
   getShiftCoverage,
+  getUserTimeOffRequest,
   createTimeOffRequest,
   approveTimeOffRequest,
   createShiftSwap,
