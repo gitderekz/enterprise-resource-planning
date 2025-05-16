@@ -1,64 +1,7 @@
-{`${process.env.NEXT_PUBLIC_CURRENCY}`}
+// {`${process.env.NEXT_PUBLIC_CURRENCY}`}
+// - If  employee's number of Absent is 4, these should be a button to send a notification
+
 /*
-Hello deepseek.. let's continue with where we left on previous chat where you told me "Time flies when we're having a great chat! We’ve exceeded the length limit. Please start a new chat!"
-I hope you are familiar with ERP Enterprice resource planning system which is what i'm developing now. I'm currently working on the administration module so lets work on it.
-- Using deep analysis & experience implement common & professional needs that will be required in this module and make it fully functional for the ERP System.
-
-- Consider adding a Number of Active Workers, On Leave & With Permissions on the dashboard statistics
-- Consider adding a table showing List of Employees with with filters [Number of Active employees, employees On Leave, employees With Permissions, departments/roles, gender, e.t.c] and when clicked should open the more details 
-- Consider adding a functionality to set,edit,delete users, user roles, for single and multiple imployees  by value,percentage
-
-- Add all basic reports in daily,monthly,annualy and export functionalities in csv,excel,pdf. Also the search functionlity to filter desired data
-- Please keep it very simple, straight, professional and functional
-- Any table needed make it in small case
-- Give output codes result in full ad not in chunks for easy understanding, Also provide full location/directory on where to put them
-
-From my current uix/frontend codes feel free to improve and add contents to my current administration module codes
---frontend\src\app\hr\administration\page.js
-
-
-
---frontend\src\app\hr\administration\components\
-
-
-
---frontend\src\app\hr\administration\services\
-
-
-
---frontend/src/app/components/header.js 
-
-
-
---frontend/src/app/components/sidebar.js 
-
-
-
---frontend/src/app/layout.tsx 
-
-
-
---frontend/src/app/page.tsx
-
-
-
---frontend\src\app\lib\WebSocketContext.js
-
-
-
---backend\server.js
-
-
-
---backend\routes\userRoutes.js
-
-
-
---backend\models\user.js
-
-
-
---backend\controllers\userController.js
 
 
 
@@ -66,110 +9,13 @@ From my current uix/frontend codes feel free to improve and add contents to my c
 
 
 
+- synchronizing
+inputs
+buy data
 
+time started captute = 
+price = 
 
-
-
-Here is the project structure
-[
-  enterprise-resource-management
-    -frontend
-      -src
-        -public
-          -locales
-            -en
-            -fr
-            -sw
-        -app
-          -layout.tsx
-          -page.tsx
-          -sharedstyles.js
-          -globals.css
-          -add-product
-            -page.js
-          -components
-            -page.js
-          -dashboard
-            -page.js
-          -finance
-            -finance/assessment
-              -page.js
-            -finance/cash-insights
-              -page.js
-            -finance/cis
-              -page.js
-            -finance/expenses
-              -page.js
-            -finance/income
-              -page.js
-            -finance/invoices
-              -page.js
-            -finance/receipts
-              -page.js
-            -finance/report
-              -page.js
-          -finances
-            -page.js
-          -hr
-            -administration
-              -page.js
-            -attendance
-              -page.js
-            -onboarding
-              -page.js
-            -payroll
-              -page.js
-            -performance
-              -page.js
-            -recruitment
-              -page.js
-            -timetabl
-              -page.js
-          -inventory
-            -page.js
-          -lib
-            -page.js
-          -login
-            -page.js
-          -pages
-            -page.js
-          -product-details
-            -[id]
-              -page.js
-              -ProductDetailsClient.js
-          -products
-            -page.js
-          -profile
-            -page.js
-          -settings
-            -page.js
-          -stores
-            -page.js
-          -tasks
-            -page.js
-          -types
-            -theme.ts
-          -users
-            -page.js
-          -utils
-            -generatePdf.js
-    -backend
-      -controllers
-      -middlewares
-      -models
-      -migrations
-      -routes
-      -seeders
-      -utils
-      server.js
-]
-
-
-
-Sawa sawa 
-Hapo kwenye purchase tukifanikiwa kusynchronize vizuri basi tutapumua maana capturing iko fresh
-
-Kama ukipata muda ufanye test wawili ninunue halafu ni synchronize tuone inakuwaje
 
 
 
@@ -280,6 +126,8 @@ C:\dev\web\enterpris…ocketContext.js:129 Uncaught InvalidAccessError: Failed t
 ************************************************
 psyop
 vegetative state
+geo fence
+muffle
 ************************************************
 SEQUELIZE
 // Install locally (recommended)

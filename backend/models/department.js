@@ -1,6 +1,6 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const role = sequelize.define('role', {
+  const department = sequelize.define('department', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      // unique: true
+      unique: true
     },
     description: {
       type: DataTypes.TEXT
@@ -20,12 +20,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   });
 
-  role.associate = function(models) {
-    role.hasMany(models.user, {
-      foreignKey: 'role_id',
-      as: 'users'
-    });
-  };
+//   department.associate = function(models) {
+//     department.hasMany(models.user, {
+//       foreignKey: 'department_id',
+//       as: 'users'
+//     });
+//   };
 
-  return role;
+  return department;
 };

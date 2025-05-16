@@ -71,6 +71,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'userId',
       as: 'deductions',
     });
+    user.belongsToMany(models.shift, {
+      through: 'shift_employees',
+      as: 'shifts',
+      foreignKey: 'userId',
+      otherKey: 'shiftId'
+    });
 
     // user.hasMany(models.invoice, {
     //   foreignKey: 'user_id',

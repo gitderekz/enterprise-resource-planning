@@ -30,31 +30,35 @@ app.use(express.json());
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const roleRoutes = require('./routes/roleRoutes');
+const departmentRoute = require('./routes/departmentRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const languageRoutes = require('./routes/languageRoutes');
 const menuRoutes = require('./routes/menuRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const recruitmentRoutes = require('./routes/recruitmentRoutes');
 const payrollRoutes = require('./routes/payrollRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
+const timetableRoutes = require('./routes/timetableRoutes');
 
 // === Mount Routes ===
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
+app.use('/api/departments', departmentRoute);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/languages', languageRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/hr/recruitment', recruitmentRoutes);
 app.use('/api/hr/payroll', payrollRoutes);
 app.use('/api/attendance', attendanceRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/timetable', timetableRoutes);
 
 // === Start HTTP Server ===
 const PORT = process.env.PORT || 5000;
