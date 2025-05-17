@@ -42,6 +42,8 @@ const recruitmentRoutes = require('./routes/recruitmentRoutes');
 const payrollRoutes = require('./routes/payrollRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const timetableRoutes = require('./routes/timetableRoutes');
+const performanceRoutes = require('./routes/performanceRoutes');
+const onboardingRoutes = require('./routes/onboardingRoutes');
 
 // === Mount Routes ===
 app.use('/api/auth', authRoutes);
@@ -57,8 +59,10 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/hr/recruitment', recruitmentRoutes);
 app.use('/api/hr/payroll', payrollRoutes);
-app.use('/api/attendance', attendanceRoutes);
-app.use('/api/timetable', timetableRoutes);
+app.use('/api/hr/attendance', attendanceRoutes);
+app.use('/api/hr/timetable', timetableRoutes);
+app.use('/api/hr/performance', performanceRoutes);
+app.use('/api/hr/onboarding', onboardingRoutes);
 
 // === Start HTTP Server ===
 const PORT = process.env.PORT || 5000;

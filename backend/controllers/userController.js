@@ -143,7 +143,7 @@ const getEmployees = async (req, res) => {
       status: employee.status,
       gender: employee.gender,
       hireDate: employee.hireDate,
-      role: employee.role ? employee.role.name : null
+      role: employee.role //? employee.role.name : null
     }));
 
     res.json(formattedEmployees);

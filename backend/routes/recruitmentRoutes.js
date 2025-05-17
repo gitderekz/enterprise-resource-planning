@@ -1,194 +1,3 @@
-// // routes/recruitmentRoutes.js
-// const express = require('express');
-// const router = express.Router();
-// const db = require('../models');
-// const { Op } = require('sequelize');
-// const multer = require('multer');
-// const path = require('path');
-
-// // Set up multer for file uploads
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, 'uploads/'); // Make sure this directory exists
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-//     cb(null, uniqueSuffix + path.extname(file.originalname));
-//   }
-// });
-
-// const upload = multer({ storage: storage });
-
-
-// // Get recruitment stats
-// router.get('/stats', async (req, res) => {
-//   try {
-//     const stats = {
-//       openPositions: await db.jobrequisition.count({ where: { status: 'Approved' } }),
-//       candidates: await db.candidate.count(),
-//       interviews: await db.interview.count(),
-//       hires: await db.candidate.count({ where: { status: 'Hired' } })
-//     };
-//     res.json(stats);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching stats' });
-//   }
-// });
-
-// // Job Requisitions
-// router.get('/requisitions', async (req, res) => {
-//   try {
-//     const requisitions = await db.jobrequisition.findAll();
-//     res.json(requisitions);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching requisitions' });
-//   }
-// });
-
-// // router.post('/requisitions', async (req, res) => {
-// //   try {
-// //     const requisition = await db.jobrequisition.create(req.body);
-// //     res.status(201).json(requisition);
-// //   } catch (error) {
-// //     res.status(500).json({ message: 'Error creating requisition' });
-// //   }
-// // });
-// router.post('/requisitions', async (req, res) => {
-//     try {
-//       const requisition = await db.jobrequisition.create(req.body);
-      
-//       // Post to job boards if approved
-//       if (req.body.status === 'Approved') {
-//         const jobData = {
-//           jobtitle: req.body.position,
-//           company: 'Your Company Name',
-//           formattedLocation: 'Remote',
-//           description: req.body.jobDescription,
-//           requirements: req.body.requirements
-//         };
-        
-//         // await postToJobBoards(jobData);
-//       }
-  
-//       res.status(201).json(requisition);
-//     } catch (error) {
-//       res.status(500).json({ message: 'Error creating requisition' });
-//     }
-//   });
-
-// // Candidates
-// router.post('/candidates', upload.single('resume'), async (req, res) => {
-//     try {
-//       let candidateData = req.body;
-      
-//       if (req.file) {
-//         const parsedData = await parseResume(req.file.path);
-//         candidateData = {
-//           ...candidateData,
-//           ...parsedData,
-//           resumeUrl: `/uploads/${req.file.filename}`
-//         };
-//       }
-  
-//       const candidate = await db.candidate.create(candidateData);
-//       res.status(201).json(candidate);
-//     } catch (error) {
-//       res.status(500).json({ message: 'Error creating candidate' });
-//     }
-//   });
-// router.get('/candidates', async (req, res) => {
-//   try {
-//     const candidates = await db.candidate.findAll({
-//       order: [['applicationDate', 'DESC']]
-//     });
-//     res.json(candidates);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching candidates' });
-//   }
-// });
-
-// router.put('/candidates/:id', async (req, res) => {
-//   try {
-//     const candidate = await db.candidate.findByPk(req.params.id);
-//     if (!candidate) {
-//       return res.status(404).json({ message: 'Candidate not found' });
-//     }
-//     await candidate.update(req.body);
-//     res.json(candidate);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error updating candidate' });
-//   }
-// });
-
-// // Add to your recruitmentRoutes.js
-// router.get('/interviews', async (req, res) => {
-//   try {
-//     const interviews = await db.interview.findAll({
-//       order: [['interviewDate', 'ASC']],
-//       include: [{
-//         model: db.candidate,
-//         attributes: ['name', 'positionApplied']
-//       }]
-//     });
-//     res.json(interviews);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching interviews' });
-//   }
-// });
-
-// //   router.post('/interviews', async (req, res) => {
-// //     try {
-// //       const interview = await db.interview.create(req.body);
-// //       res.status(201).json(interview);
-// //     } catch (error) {
-// //       res.status(500).json({ message: 'Error creating interview' });
-// //     }
-// //   });
-
-// router.post('/interviews', async (req, res) => {
-//   try {
-//     const interview = await db.interview.create(req.body);
-    
-//     // Create calendar event
-//     const candidate = await db.candidate.findByPk(req.body.candidateId);
-//     const event = {
-//       summary: `Interview: ${candidate.name} - ${candidate.positionApplied}`,
-//       description: req.body.notes,
-//       start: {
-//         dateTime: req.body.interviewDate,
-//         timeZone: 'UTC',
-//       },
-//       end: {
-//         dateTime: new Date(new Date(req.body.interviewDate).getTime() + 60*60*1000).toISOString(),
-//         timeZone: 'UTC',
-//       },
-//       attendees: [
-//         { email: req.body.interviewerEmail }, // Add interviewer email to form
-//         { email: candidate.email }
-//       ],
-//       reminders: {
-//         useDefault: false,
-//         overrides: [
-//           { method: 'email', minutes: 24 * 60 },
-//           { method: 'popup', minutes: 30 },
-//         ],
-//       },
-//     };
-
-//     // You'll need to implement OAuth2 for this
-//     // const calendarEvent = await createCalendarEvent(authClient, event);
-//     // interview.calendarEventId = calendarEvent.id;
-//     // await interview.save();
-
-//     res.status(201).json(interview);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error creating interview' });
-//   }
-// });
-
-// module.exports = router;
-
-
 const express = require('express');
 const router = express.Router();
 const db = require('../models');
@@ -654,6 +463,7 @@ router.post('/offers/:interviewId', async (req, res) => {
       message: 'Offer generated successfully',
       offer,
       downloadUrl: `/api/hr/recruitment/offers/${offerLetter.filename}/download`
+      // downloadUrl: `//api/hr/recruitment/offers/${offerLetter.filename}/download`
     });
   } catch (error) {
     handleError(res, error, 'Failed to generate offer');
@@ -723,3 +533,193 @@ router.get('/reports', async (req, res) => {
 });
 
 module.exports = router;
+
+// // routes/recruitmentRoutes.js
+// const express = require('express');
+// const router = express.Router();
+// const db = require('../models');
+// const { Op } = require('sequelize');
+// const multer = require('multer');
+// const path = require('path');
+
+// // Set up multer for file uploads
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, 'uploads/'); // Make sure this directory exists
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+//     cb(null, uniqueSuffix + path.extname(file.originalname));
+//   }
+// });
+
+// const upload = multer({ storage: storage });
+
+
+// // Get recruitment stats
+// router.get('/stats', async (req, res) => {
+//   try {
+//     const stats = {
+//       openPositions: await db.jobrequisition.count({ where: { status: 'Approved' } }),
+//       candidates: await db.candidate.count(),
+//       interviews: await db.interview.count(),
+//       hires: await db.candidate.count({ where: { status: 'Hired' } })
+//     };
+//     res.json(stats);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error fetching stats' });
+//   }
+// });
+
+// // Job Requisitions
+// router.get('/requisitions', async (req, res) => {
+//   try {
+//     const requisitions = await db.jobrequisition.findAll();
+//     res.json(requisitions);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error fetching requisitions' });
+//   }
+// });
+
+// // router.post('/requisitions', async (req, res) => {
+// //   try {
+// //     const requisition = await db.jobrequisition.create(req.body);
+// //     res.status(201).json(requisition);
+// //   } catch (error) {
+// //     res.status(500).json({ message: 'Error creating requisition' });
+// //   }
+// // });
+// router.post('/requisitions', async (req, res) => {
+//     try {
+//       const requisition = await db.jobrequisition.create(req.body);
+      
+//       // Post to job boards if approved
+//       if (req.body.status === 'Approved') {
+//         const jobData = {
+//           jobtitle: req.body.position,
+//           company: 'Your Company Name',
+//           formattedLocation: 'Remote',
+//           description: req.body.jobDescription,
+//           requirements: req.body.requirements
+//         };
+        
+//         // await postToJobBoards(jobData);
+//       }
+  
+//       res.status(201).json(requisition);
+//     } catch (error) {
+//       res.status(500).json({ message: 'Error creating requisition' });
+//     }
+//   });
+
+// // Candidates
+// router.post('/candidates', upload.single('resume'), async (req, res) => {
+//     try {
+//       let candidateData = req.body;
+      
+//       if (req.file) {
+//         const parsedData = await parseResume(req.file.path);
+//         candidateData = {
+//           ...candidateData,
+//           ...parsedData,
+//           resumeUrl: `/uploads/${req.file.filename}`
+//         };
+//       }
+  
+//       const candidate = await db.candidate.create(candidateData);
+//       res.status(201).json(candidate);
+//     } catch (error) {
+//       res.status(500).json({ message: 'Error creating candidate' });
+//     }
+//   });
+// router.get('/candidates', async (req, res) => {
+//   try {
+//     const candidates = await db.candidate.findAll({
+//       order: [['applicationDate', 'DESC']]
+//     });
+//     res.json(candidates);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error fetching candidates' });
+//   }
+// });
+
+// router.put('/candidates/:id', async (req, res) => {
+//   try {
+//     const candidate = await db.candidate.findByPk(req.params.id);
+//     if (!candidate) {
+//       return res.status(404).json({ message: 'Candidate not found' });
+//     }
+//     await candidate.update(req.body);
+//     res.json(candidate);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error updating candidate' });
+//   }
+// });
+
+// // Add to your recruitmentRoutes.js
+// router.get('/interviews', async (req, res) => {
+//   try {
+//     const interviews = await db.interview.findAll({
+//       order: [['interviewDate', 'ASC']],
+//       include: [{
+//         model: db.candidate,
+//         attributes: ['name', 'positionApplied']
+//       }]
+//     });
+//     res.json(interviews);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error fetching interviews' });
+//   }
+// });
+
+// //   router.post('/interviews', async (req, res) => {
+// //     try {
+// //       const interview = await db.interview.create(req.body);
+// //       res.status(201).json(interview);
+// //     } catch (error) {
+// //       res.status(500).json({ message: 'Error creating interview' });
+// //     }
+// //   });
+
+// router.post('/interviews', async (req, res) => {
+//   try {
+//     const interview = await db.interview.create(req.body);
+    
+//     // Create calendar event
+//     const candidate = await db.candidate.findByPk(req.body.candidateId);
+//     const event = {
+//       summary: `Interview: ${candidate.name} - ${candidate.positionApplied}`,
+//       description: req.body.notes,
+//       start: {
+//         dateTime: req.body.interviewDate,
+//         timeZone: 'UTC',
+//       },
+//       end: {
+//         dateTime: new Date(new Date(req.body.interviewDate).getTime() + 60*60*1000).toISOString(),
+//         timeZone: 'UTC',
+//       },
+//       attendees: [
+//         { email: req.body.interviewerEmail }, // Add interviewer email to form
+//         { email: candidate.email }
+//       ],
+//       reminders: {
+//         useDefault: false,
+//         overrides: [
+//           { method: 'email', minutes: 24 * 60 },
+//           { method: 'popup', minutes: 30 },
+//         ],
+//       },
+//     };
+
+//     // You'll need to implement OAuth2 for this
+//     // const calendarEvent = await createCalendarEvent(authClient, event);
+//     // interview.calendarEventId = calendarEvent.id;
+//     // await interview.save();
+
+//     res.status(201).json(interview);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error creating interview' });
+//   }
+// });
+
+// module.exports = router;

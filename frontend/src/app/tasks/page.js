@@ -20,6 +20,7 @@ const taskStatusData = [
 ];
 
 export default function TasksPage() {
+  const [user, setUser] = useState(null);
   const styles = useSharedStyles();
   const pathname = usePathname();
   const { menuItems } = useContext(MenuContext);
@@ -39,7 +40,6 @@ export default function TasksPage() {
     reason: ''
   });
   const [showRequestModal, setShowRequestModal] = useState(false);
-  const [user, setUser] = useState(null);
 
 
   useState(() => {
@@ -236,7 +236,7 @@ export default function TasksPage() {
           </div>
 
           {/* Task Overview */}
-          {activeTab === 'tasks' && (
+          {activeTab === 'tasks' && user?.role?.name === 'hr' && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Task Overview</h2>
@@ -358,12 +358,12 @@ export default function TasksPage() {
                       <th className="py-2 px-4 border-b">Dates</th>
                       <th className="py-2 px-4 border-b">Reason</th>
                       <th className="py-2 px-4 border-b">Status</th>
-                      {user.role?.name==='hr' && 
-                      (<th className="py-2 px-4 border-b">Action</th>)
-                      }
+                      {user.role?.name==='hr' && (
+                        <th className="py-2 px-4 border-b">Action</th>
+                      )}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="text-center">
                     {timeOffRequests.map((request, index) => (
                       <tr key={index}>
                         <td className="py-2 px-4 border-b">{request.user?.username || 'Unknown'}</td>
@@ -399,8 +399,7 @@ export default function TasksPage() {
                               </>
                             )}
                           </td>
-                          )
-                        }
+                        )}
                       </tr>
                     ))}
                   </tbody>

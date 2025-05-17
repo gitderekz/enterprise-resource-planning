@@ -61,10 +61,10 @@ const TimetablePage = () => {
       try {
         setLoading(true);
         const [timetableRes, coverageRes, departmentsRes, employeesRes] = await Promise.all([
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/timetable`, {
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/hr/timetable`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           }),
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/timetable/coverage`, {
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/coverage`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           }),
           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/departments`, {
