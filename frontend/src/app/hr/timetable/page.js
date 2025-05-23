@@ -101,7 +101,7 @@ const TimetablePage = () => {
   const handleCreateShift = async () => {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/timetable/shifts`,
+        `${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/shifts`,
         {
           ...newShift,
           employeeIds: selectedEmployees
