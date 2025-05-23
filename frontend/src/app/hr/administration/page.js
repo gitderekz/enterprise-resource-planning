@@ -256,6 +256,7 @@ const fetchEmployees = async () => {
           {/* Employees Tab */}
           {activeTab === 'employees' && (
             <div className="bg-white p-6 rounded-lg shadow">
+              {console.log("setSelectedEmployees=>",setSelectedEmployees)}
               <EmployeeTable 
                 onSelectEmployees={setSelectedEmployees}
                 onEditUser={() => setActiveTab('management')}

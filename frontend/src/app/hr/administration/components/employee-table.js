@@ -37,7 +37,7 @@ const EmployeeTable = ({ onSelectEmployees, onEditUser }) => {
     const matchesSearch = 
       employee.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (employee.position||employee.role)?.toLowerCase().includes(searchTerm.toLowerCase());
+      (employee.position||employee.role?.name||employee.role)?.toLowerCase().includes(searchTerm.toLowerCase());
 
     // Status filter
     const matchesStatus = 
@@ -228,7 +228,7 @@ const EmployeeTable = ({ onSelectEmployees, onEditUser }) => {
                     {employee.department}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {employee.position??employee.role}
+                    {employee.position?? employee.role?.name ?? employee.role}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

@@ -36,7 +36,15 @@ export const DataTable = ({ columns, data, loading }) => {
               <tr key={rowIndex}>
                 {columns.map((column) => (
                   <td key={column.accessorKey || column.id} className="px-6 py-4 whitespace-nowrap">
-                    {column.cell ? column.cell({ row: { original: row, index: rowIndex, } }) : row[column.accessorKey]}
+                    {/* {column.cell 
+                    ? column.cell({ row: { original: row, index: rowIndex, } }) 
+                    : row[column.accessorKey]} */}
+                    
+                    {column.cell 
+                    ? column.cell({ row: { original: row, index: rowIndex } }) 
+                    : typeof row[column.accessorKey] === 'object'
+                      ? JSON.stringify(row[column.accessorKey])
+                      : row[column.accessorKey]}
                   </td>
                 ))}
               </tr>

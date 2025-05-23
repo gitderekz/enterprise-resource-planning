@@ -118,7 +118,7 @@ const checkOut = async (req, res) => {
 const getUserAttendanceStats = async (req, res) => {
   try {
     const { id } = req.params;
-    const { startDate, endDate } = req.query;    
+    const { startDate, endDate, userId } = req.query;    
 
     const where = {};
     
