@@ -1,5 +1,9 @@
 ssh root@89.117.36.40
 cd /var/www/enterprise-resource-planning
+[
+    pm2 restart  enterprise-resource-planning
+    npm run build
+]
 badilisha
 NEXT_PUBLIC_WS_URL=ws://enterprise-resource-planning.tech
 NEXT_PUBLIC_WS_URL=wss://enterprise-resource-planning.tech

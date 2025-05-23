@@ -66,8 +66,8 @@ const AttendancePage = () => {
       const storedUser = JSON.parse(localStorage.getItem('user'));
       const currentUserId = storedUser?.id;
 
-      // const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/attendance/stats/${selectedEmployee?.id|| currentUserId || ''}`, {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/attendance/stats/${selectedEmployee?.id|| currentUserId || ''}`, {
+      // const response = await axios.get(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/stats/${selectedEmployee?.id|| currentUserId || ''}`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/stats/${selectedEmployee?.id|| currentUserId || ''}`, {
         params: { startDate, endDate },
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -135,7 +135,7 @@ const AttendancePage = () => {
         userId: selectedEmployee?.id
       };
 
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/attendance`,  {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance`,  {
         params ,
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -148,7 +148,7 @@ const AttendancePage = () => {
       
       // Calculate stats if viewing a single employee
       if (selectedEmployee) {
-        const statsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/attendance/stats/${selectedEmployee.id}`, {
+        const statsResponse = await axios.get(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/stats/${selectedEmployee.id}`, {
           params,
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -160,7 +160,7 @@ const AttendancePage = () => {
         setStats(statsResponse.data.stats);
       } else {
         // Always fetch stats, whether single or multiple users
-        const statsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/attendance/stats`, {
+        const statsResponse = await axios.get(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/stats`, {
           params,
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -202,7 +202,7 @@ const AttendancePage = () => {
         endDate: endDate.toISOString()
       };
 
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/attendance/report`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/report`, {
         params,
         responseType: 'blob',
         headers: {
@@ -225,7 +225,7 @@ const AttendancePage = () => {
 
   const handleCheckIn = async () => {
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/attendance/check-in`, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/check-in`, {
         notes: 'Checked in via system',
         ip_address: '', // You can capture this if needed
         device_info: navigator.userAgent
@@ -251,7 +251,7 @@ const AttendancePage = () => {
 
   const handleCheckOut = async () => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/attendance/check-out`, {
+      await axios.post(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/check-out`, {
         notes: 'Checked out via system'
       }, {
         headers: {
@@ -270,7 +270,7 @@ const AttendancePage = () => {
   const handleDeductSalary = async (employeeId) => {
     if (confirm('Are you sure you want to deduct salary for this employee?')) {
       try {
-        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/attendance/deduct-salary`, {
+        await axios.post(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/deduct-salary`, {
           userId: employeeId,
           deductionPercentage: 10 // Default 10% deduction
         }, {
@@ -310,7 +310,7 @@ const AttendancePage = () => {
       };
 
       // Use axios to download the file
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/attendance/report`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/report`, {
         params,
         responseType: 'blob',
         headers: {
@@ -488,7 +488,7 @@ const AttendancePage = () => {
 
   const handleSendReminder = async (employeeId) => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/attendance/send-reminder`, {
+      await axios.post(`${process.env.NEXT_PUBLIC_APIURL}/hr/attendance/send-reminder`, {
         userId: employeeId
       }, {
         headers: {

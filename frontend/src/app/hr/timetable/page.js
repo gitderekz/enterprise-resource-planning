@@ -139,7 +139,7 @@ const TimetablePage = () => {
   const handleCreateRequest = async () => {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/timetable/time-off`,
+        `${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/time-off`,
         newRequest,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -163,7 +163,7 @@ const TimetablePage = () => {
   const handleApproveRequest = async (id, approved) => {
     try {
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/timetable/time-off/${id}/approve`,
+        `${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/time-off/${id}/approve`,
         { approved },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -181,7 +181,7 @@ const TimetablePage = () => {
   // // const handleExport = async (format) => {
   // //   try {
   // //     window.open(
-  // //       `${process.env.NEXT_PUBLIC_API_URL}/timetable/export/${format}`,
+  // //       `${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/export/${format}`,
   // //       '_blank'
   // //     );
   // //   } catch (err) {
@@ -199,7 +199,7 @@ const TimetablePage = () => {
 
   //     // Create a temporary link to trigger download
   //     const link = document.createElement('a');
-  //     link.href = `${process.env.NEXT_PUBLIC_API_URL}/timetable/export/${format}`;
+  //     link.href = `${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/export/${format}`;
   //     link.setAttribute('download', `timetable.${format}`);
   //     link.setAttribute('target', '_blank');
       
@@ -219,7 +219,7 @@ const TimetablePage = () => {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/timetable/export/${format}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/export/${format}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`
@@ -250,7 +250,7 @@ const TimetablePage = () => {
   const handleShiftSwap = async () => {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/timetable/shift-swap`,
+        `${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/shift-swap`,
         swapRequest,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

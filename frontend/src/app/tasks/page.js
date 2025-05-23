@@ -69,7 +69,7 @@ export default function TasksPage() {
         const currentUserId = storedUser?.id;
 
         const [timetableRes, tasks] = await Promise.all([
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/timetable/time-off/${currentUserId}`, {
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/time-off/${currentUserId}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           }),
           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, {
@@ -186,7 +186,7 @@ export default function TasksPage() {
   const handleCreateRequest = async () => {
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/timetable/time-off`,
+        `${process.env.NEXT_PUBLIC_API_URL}/hr/timetable/time-off`,
         newRequest,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
