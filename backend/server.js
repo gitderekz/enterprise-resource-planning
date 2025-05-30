@@ -44,6 +44,9 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const timetableRoutes = require('./routes/timetableRoutes');
 const performanceRoutes = require('./routes/performanceRoutes');
 const onboardingRoutes = require('./routes/onboardingRoutes');
+const financeRoutes = require('./routes/financeRoutes');
+const customerRoutes = require('./routes/customerRoutes');
+const cisRoutes = require('./routes/cisRoutes');
 
 // === Mount Routes ===
 app.use('/api/auth', authRoutes);
@@ -63,6 +66,9 @@ app.use('/api/hr/attendance', attendanceRoutes);
 app.use('/api/hr/timetable', timetableRoutes);
 app.use('/api/hr/performance', performanceRoutes);
 app.use('/api/hr/onboarding', onboardingRoutes);
+app.use('/api/finance', financeRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/cis', cisRoutes);
 
 // === Start HTTP Server ===
 const PORT = process.env.PORT || 5000;

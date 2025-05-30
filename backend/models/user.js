@@ -34,6 +34,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM('active', 'inactive', 'on_leave', 'suspended'),
       defaultValue: 'active',
     },
+    level: {
+      type: DataTypes.ENUM('junior', 'mid', 'senior', 'executive'),
+      defaultValue: 'junior',
+    },
     permissions: {
       // type: DataTypes.JSON,
       // defaultValue: {},

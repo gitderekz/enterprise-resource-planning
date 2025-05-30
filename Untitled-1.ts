@@ -1,7 +1,61 @@
 // {`${process.env.NEXT_PUBLIC_CURRENCY}`}
 // - If  employee's number of Absent is 4, these should be a button to send a notification
-
 /*
+Thanks i really like everything, now here are few changes to make
+
+lets add more details to "Add New Task", 
+--->it is missing description,
+FOR onboardingtasks table
+--->There should be means to toggle status between, progress & overdue just like how now it can toggle done,
+
+
+FOR onboardings table
+--->While creating it does not fill the assignedTo field
+--->There should be means to update status
+--->There should be means to update current stage
+--->There should be means to update completioin date
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---> You can further enhance this by:
+   -Adding more detailed performance criteria
+   -Implementing 360-degree feedback
+   -Adding goal-setting functionality
+   -Implementing performance improvement plans
+   -Adding more detailed reporting and analytics
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

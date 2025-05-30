@@ -1,0 +1,3159 @@
+My very initial request was to develop ERP Enterprice resource planning system with Nodejs, mysql & Nextjs
+We succeded and about 60% is complete by finishing HR. 
+
+BELOW IS THE PROJECT STRUCTURE
+
+[
+  enterprise-resource-management
+    -frontend
+      -src
+        -public
+          -locales
+            -en
+            -fr
+            -sw
+        -app
+          -layout.tsx
+          -page.tsx
+          -sharedstyles.js
+          -globals.css
+          -add-product
+            -page.js
+          -components
+            -page.js
+          -dashboard
+            -page.js
+          -finance
+            -finance/assessment
+              -page.js
+            -finance/cash-insights
+              -page.js
+            -finance/cis
+              -page.js
+            -finance/expenses
+              -page.js
+            -finance/income
+              -page.js
+            -finance/invoices
+              -page.js
+            -finance/receipts
+              -page.js
+            -finance/report
+              -page.js
+          -finances
+            -page.js
+          -hr
+            -administration
+              -page.js
+            -attendance
+              -page.js
+            -onboarding
+              -page.js
+            -payroll
+              -page.js
+            -performance
+              -page.js
+            -recruitment
+              -page.js
+            -timetabl
+              -page.js
+          -inventory
+            -page.js
+          -lib
+            -page.js
+          -login
+            -page.js
+          -pages
+            -page.js
+          -product-details
+            -[id]
+              -page.js
+              -ProductDetailsClient.js
+          -products
+            -page.js
+          -profile
+            -page.js
+          -settings
+            -page.js
+          -stores
+            -page.js
+          -tasks
+            -page.js
+          -types
+            -theme.ts
+          -users
+            -page.js
+          -utils
+            -generatePdf.js
+    -backend
+      -controllers
+      -middlewares
+      -models
+      -migrations
+      -routes
+      -seeders
+      -utils
+      server.js
+]
+
+
+
+
+
+
+
+
+THESE ARE THE TABLE MODELS
+backend\models\attendance.js
+backend\models\candidate.js
+backend\models\deduction.js
+backend\models\department.js
+backend\models\employee.js
+backend\models\index.js
+backend\models\interview.js
+backend\models\inventory.js
+backend\models\invoice.js
+backend\models\jobRequisition.js
+backend\models\language.js
+backend\models\menu.js
+backend\models\notification.js
+backend\models\offer.js
+backend\models\onboarding.js
+backend\models\onboardingTask.js
+backend\models\payroll.js
+backend\models\performance.js
+backend\models\performanceCriterion.js
+backend\models\performanceSetting.js
+backend\models\report.js
+backend\models\role.js
+backend\models\shift.js
+backend\models\shiftSwap.js
+backend\models\task.js
+backend\models\timeOffRequest.js
+backend\models\user.js
+
+THE ROUTES
+backend\routes\attendanceRoutes.js
+backend\routes\authRoutes.js
+backend\routes\dashboardRoutes.js
+backend\routes\departmentRoutes.js
+backend\routes\inventoryRoutes.js
+backend\routes\invoiceRoutes.js
+backend\routes\languageRoutes.js
+backend\routes\menuRoutes.js
+backend\routes\notificationRoutes.js
+backend\routes\onboardingRoutes.js
+backend\routes\payrollRoutes.js
+backend\routes\performanceRoutes.js
+backend\routes\recruitmentRoutes.js
+backend\routes\roleRoutes.js
+backend\routes\taskRoutes.js
+backend\routes\timetableRoutes.js
+backend\routes\userRoutes.js
+
+Server
+backend\server.js
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const WebSocket = require('ws');
+const jwt = require('jsonwebtoken');
+const db = require('./models'); // Sequelize models
+const { NotificationService, notificationServiceInstance } = require('./services/notificationService');
+
+const app = express();
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+// === CORS Setup ===
+const allowedOrigins = process.env.CLIENT_ORIGIN?.split(',') || ['http://localhost:3000'];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
+
+app.use(express.json());
+
+// === Route Imports ===
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const roleRoutes = require('./routes/roleRoutes');
+const departmentRoute = require('./routes/departmentRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
+const languageRoutes = require('./routes/languageRoutes');
+const menuRoutes = require('./routes/menuRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const recruitmentRoutes = require('./routes/recruitmentRoutes');
+const payrollRoutes = require('./routes/payrollRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
+const timetableRoutes = require('./routes/timetableRoutes');
+const performanceRoutes = require('./routes/performanceRoutes');
+const onboardingRoutes = require('./routes/onboardingRoutes');
+
+// === Mount Routes ===
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/roles', roleRoutes);
+app.use('/api/departments', departmentRoute);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/languages', languageRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/hr/recruitment', recruitmentRoutes);
+app.use('/api/hr/payroll', payrollRoutes);
+app.use('/api/hr/attendance', attendanceRoutes);
+app.use('/api/hr/timetable', timetableRoutes);
+app.use('/api/hr/performance', performanceRoutes);
+app.use('/api/hr/onboarding', onboardingRoutes);
+
+// === Start HTTP Server ===
+const PORT = process.env.PORT || 5000;
+const server = app.listen(PORT, () => {
+  console.log(`HTTP server running on port ${PORT}`);
+});
+
+// === WebSocket Setup ===
+const wss = new WebSocket.Server({ server });
+
+// Initialize NotificationService with WebSocket server
+// NotificationService.wss = wss;
+// const notificationService = new NotificationService(wss);
+notificationServiceInstance.wss = wss; // This is the key change
+
+
+const verifyToken = (token) => {
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    console.error('WebSocket token verification failed:', err.message);
+    return null;
+  }
+};
+
+// Track connected clients with user information
+const activeClients = new Map();
+
+wss.on('connection', (ws, req) => {
+  const url = new URL(req.url, `${process.env.SOCKET_PROTOCOL}://${req.headers.host}`);
+  const token = url.searchParams.get('token');
+
+  const user = verifyToken(token);
+  if (!user) {
+    ws.close(1008, 'Unauthorized');
+    return;
+  }
+
+  // Attach user to the WebSocket connection
+  ws.user = user;
+  
+  // Store connection by user ID
+  activeClients.set(user.id, ws);
+  console.log(`Client connected: ${user.id}`);
+
+  ws.on('message', async (message) => {
+    try {
+      const { type, payload } = JSON.parse(message);
+      
+      if (['NEW_TASK', 'DELETE_TASK', 'info', 'task', 'alert', 'urgent'].includes(type)) {
+        const notificationData = {
+          userIds: payload.userIds || [user.id], // Include sender by default
+          type: payload.type || 'task',
+          title: payload.title || 'New Notification',
+          message: payload.message || 'You have a new notification',
+          link: payload.link || `/tasks/${payload.id || ''}`,
+          metadata: {
+            ...(payload.metadata || {}), // Preserve any existing metadata
+            senderId: user.id,
+            entityType: payload.type || 'task',
+            entityId: payload.id || null,
+            isFromWebSocket: true // Mark as WS notification
+          }
+        };
+  
+        console.log('Creating WS notification:', notificationData);
+        await notificationServiceInstance.createNotification(notificationData);
+      }
+    } catch (err) {
+      console.error('Error processing message:', err);
+    }
+  });
+
+  ws.on('close', () => {
+    if (ws.user) {
+      activeClients.delete(ws.user.id);
+      console.log(`Client disconnected: ${ws.user.id}`);
+    }
+  });
+});
+
+// === DB Setup ===
+db.sequelize.authenticate()
+  .then(() => {
+    console.log('Database connected');
+    return db.sequelize.sync({ alter: true }); // consider false in production
+  })
+  .then(() => console.log('Database synced'))
+  .catch(err => console.error('Database connection error:', err));
+
+// Export for testing or other modules
+module.exports = { server, wss, notificationService: notificationServiceInstance, activeClients };
+// Close server gracefully on exit
+
+
+
+
+SOME CONSTANT FRONTEND CODES FOR ALL THE MODULES
+--->frontend\src\app\sharedStyles.js
+// sharedStyles.js
+import { useContext } from 'react';
+import { ThemeContext } from './lib/ThemeContext';
+
+export const useSharedStyles = () => {
+  const { theme, colors } = useContext(ThemeContext);
+
+  const getColor = (lightColor, darkColor) => {
+    return theme === 'dark' ? darkColor : lightColor;
+  };
+
+  return {
+    colors, // Make colors available directly
+    theme,  // Make current theme available
+    // styles: {
+      // sidebarContainer: {
+      //   position: 'fixed',
+      //   top: '80px',
+      //   left: 0,
+      //   width: '250px',
+      //   height: 'calc(100vh - 80px)',
+      //   backgroundColor: colors[theme].sidebarBg,
+      //   boxShadow: theme === 'dark' ? '2px 0 8px rgba(0, 0, 0, 0.3)' : '2px 0 8px rgba(0, 0, 0, 0.1)',
+      //   borderRadius: '0 12px 12px 0',
+      //   zIndex: 999,
+      //   display: 'flex',
+      //   flexDirection: 'column',
+      // },
+      sidebarContainer: {
+        position: 'fixed',
+        top: '80px',
+        left: 0,
+        width: '250px',
+        height: 'calc(100vh - 80px)',
+        backgroundColor: colors[theme].sidebarBg,
+        boxShadow: theme === 'dark' ? '2px 0 8px rgba(0, 0, 0, 0.3)' : '2px 0 8px rgba(0, 0, 0, 0.1)',
+        borderRadius: '0 12px 12px 0',
+        zIndex: 999,
+        display: 'flex',
+        flexDirection: 'column',
+      },
+      sidebarHeader: {
+        padding: '16px',
+        // display: 'flex',
+        justifyContent: 'flex-end',
+        flexShrink: 0,
+      },
+      sidebarContent: {
+        flex: 1,
+        overflowY: 'auto',
+        // padding: '0 16px 16px',
+        padding: '16px',
+      },
+      // sidebarItem: {
+      //   fontSize: '14px',
+      //   color: colors[theme].sidebarText,
+      //   marginBottom: '8px',
+      //   cursor: 'pointer',
+      //   display: 'flex',
+      //   alignItems: 'center',
+      //   gap: '12px',
+      //   padding: '8px',
+      //   borderRadius: '8px',
+      //   transition: 'all 0.3s',
+      // },
+      sidebarItem: {
+        fontSize: '14px',
+        color: colors[theme].sidebarText,
+        padding: '10px 12px',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        transition: 'all 0.3s',
+      },
+      sidebarItemHover: {
+        backgroundColor: theme === 'dark' ? '#16213e' : '#6A3CBC',
+      },
+      container: {
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: 'Inter, sans-serif',
+        backgroundColor: colors[theme].background,
+        color: colors[theme].text,
+        minHeight: '100vh',
+      },
+      header: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: colors[theme].background,
+        padding: '16px 24px',
+        boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+        zIndex: 1000,
+      },
+      headerLeft: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '24px',
+      },
+      logo: {
+        fontSize: '20px',
+        fontWeight: '600',
+        color: colors[theme].primary,
+      },
+      searchBar: {
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: theme === 'dark' ? '#2d2d2d' : '#f5f6fa',
+        borderRadius: '8px',
+        padding: '8px 12px',
+        width: '300px',
+        border: `1px solid ${colors[theme].primary}`,
+      },
+      searchIcon: {
+        color: colors[theme].primary,
+        marginRight: '8px',
+      },
+      searchInput: {
+        border: 'none',
+        outline: 'none',
+        backgroundColor: 'transparent',
+        fontSize: '14px',
+        color: colors[theme].text,
+        width: '100%',
+      },
+      headerRight: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '20px',
+      },
+      icon: {
+        color: colors[theme].primary,
+        fontSize: '20px',
+        cursor: 'pointer',
+      },
+      popup: {
+        position: 'absolute',
+        top: '40px',
+        right: 0,
+        backgroundColor: colors[theme].cardBg,
+        boxShadow: theme === 'dark' ? '0 2px 8px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.2)',
+        borderRadius: '8px',
+        zIndex: 100,
+        minWidth: '120px',
+        padding: '8px 0',
+      },
+      popupItem: {
+        display: 'block',
+        padding: '10px 16px',
+        width: '100%',
+        background: 'none',
+        border: 'none',
+        textAlign: 'left',
+        fontSize: '14px',
+        cursor: 'pointer',
+        color: colors[theme].text,
+      },
+      mainContent: {
+        display: 'flex',
+        marginTop: '80px',
+      },
+      sidebar: {
+        position: 'fixed',
+        top: '80px',
+        left: 0,
+        width: '250px',
+        height: 'calc(100vh - 80px)',
+        backgroundColor: colors[theme].sidebarBg,
+        padding: '24px',
+        boxShadow: theme === 'dark' ? '2px 0 8px rgba(0, 0, 0, 0.3)' : '2px 0 8px rgba(0, 0, 0, 0.1)',
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        borderRadius: '0 12px 12px 0',
+        zIndex: 999,
+        transition: 'all 0.3s ease',
+      },
+      sidebarList: {
+        listStyle: 'none',
+        padding: '0',
+        marginTop: '20px',
+      },
+      sidebarItem: {
+        fontSize: '14px',
+        color: colors[theme].sidebarText,
+        marginBottom: '16px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '8px',
+        borderRadius: '8px',
+        transition: 'all 0.3s',
+        '&:hover': {
+          backgroundColor: theme === 'dark' ? '#16213e' : '#6A3CBC',
+        },
+      },
+      sidebarItemActive: {
+        backgroundColor: theme === 'dark' ? '#16213e' : '#6A3CBC',
+        color: '#ffffff',
+      },
+      menuIcon: {
+        color: colors[theme].sidebarText,
+        fontSize: '16px',
+      },
+      // sidebarFooter: {
+      //   display: 'flex',
+      //   flexDirection: 'column',
+      //   gap: '12px',
+      //   marginTop: '24px',
+      //   paddingTop: '16px',
+      //   borderTop: `1px solid ${theme === 'dark' ? '#2d2d2d' : '#D4ADFC'}`,
+      // },
+      sidebarFooter: {
+        padding: '16px',
+        borderTop: `1px solid ${theme === 'dark' ? '#2d2d2d' : '#D4ADFC'}`,
+        flexShrink: 0,
+      },
+      // textButton: {
+      //   backgroundColor: 'transparent',
+      //   border: 'none',
+      //   color: colors[theme].sidebarText,
+      //   fontSize: '14px',
+      //   cursor: 'pointer',
+      //   display: 'flex',
+      //   alignItems: 'center',
+      //   gap: '12px',
+      //   padding: '8px',
+      //   borderRadius: '8px',
+      //   transition: 'all 0.3s',
+      //   '&:hover': {
+      //     backgroundColor: theme === 'dark' ? '#16213e' : '#6A3CBC',
+      //   },
+      // },
+      textButton: {
+        width: '100%',
+        textAlign: 'left',
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: colors[theme].sidebarText,
+        fontSize: '14px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '10px 12px',
+        borderRadius: '8px',
+        transition: 'all 0.3s',
+        '&:hover': {
+          backgroundColor: theme === 'dark' ? '#16213e' : '#6A3CBC',
+        },
+      },
+      childMenuList: {
+        listStyle: 'none',
+        paddingLeft: '24px',
+        marginTop: '4px',
+      },
+      childMenuItem: {
+        cursor: 'pointer',
+        padding: '6px 12px',
+        marginLeft: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '13px',
+        borderRadius: '6px',
+        transition: 'all 0.3s',
+        color: theme === 'dark' ? '#D4ADFC' : '#8253D7',
+      },
+      childMenuItemHover: {
+        backgroundColor: theme === 'dark' ? '#16213e' : '#6A3CBC',
+        color: '#ffffff',
+      },
+      childIcon: {
+        marginRight: '8px',
+        fontSize: '14px',
+        color: theme === 'dark' ? '#D4ADFC' : '#8253D7',
+      },
+      content: {
+        marginLeft: '250px',
+        padding: '24px',
+        width: 'calc(100% - 250px)',
+        overflowY: 'auto',
+        height: 'calc(100vh - 80px)',
+        backgroundColor: colors[theme].background,
+      },
+      pageTitle: {
+        fontSize: '24px',
+        fontWeight: '600',
+        color: colors[theme].text,
+        marginBottom: '24px',
+      },
+
+      // DASHBOARD STYLES
+      topSection: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        marginBottom: '24px',
+      },
+      cardScrollContainer: {
+        display: 'flex',
+        gap: '16px',
+        overflowX: 'auto',
+        flex: 1,
+      },
+      card: {
+        backgroundColor: colors[theme].cardBg,
+        borderRadius: '8px',
+        padding: '16px',
+        boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+        minWidth: '200px',
+        textAlign: 'center',
+      },
+      cardNumber: {
+        fontSize: '32px',
+        fontWeight: '600',
+        color: colors[theme].primary,
+      },
+      cardUnit: {
+        fontSize: '14px',
+        color: colors[theme].secondary,
+        margin: '8px 0',
+      },
+      cardTitle: {
+        fontSize: '16px',
+        color: colors[theme].text,
+      },
+      scrollArrow: {
+        backgroundColor: colors[theme].primary,
+        borderRadius: '50%',
+        padding: '12px',
+        cursor: 'pointer',
+      },
+      arrowIcon: {
+        color: '#ffffff',
+        fontSize: '20px',
+      },
+      bottomSection: {
+        backgroundColor: colors[theme].cardBg,
+        borderRadius: '8px',
+        padding: '24px',
+        boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+      },
+      bottomRow: {
+        display: 'flex',
+        gap: '24px',
+        marginBottom: '24px',
+      },
+      bottomCard: {
+        backgroundColor: theme === 'dark' ? '#1e1e1e' : '#f5f6fa',
+        borderRadius: '8px',
+        padding: '16px',
+        flex: 1,
+      },
+      bottomCardTitle: {
+        fontSize: '18px',
+        fontWeight: '600',
+        color: colors[theme].text,
+        marginBottom: '16px',
+      },
+      chartContainer: {
+        height: '200px',
+      },
+      smallCardGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '16px',
+      },
+      smallCard: {
+        backgroundColor: colors[theme].primary,
+        borderRadius: '8px',
+        padding: '16px',
+        textAlign: 'center',
+      },
+      smallCardIcon: {
+        color: '#ffffff',
+        fontSize: '24px',
+      },
+      smallCardText: {
+        fontSize: '14px',
+        color: '#ffffff',
+        marginTop: '8px',
+      },
+      stockList: {
+        listStyle: 'none',
+        padding: '0',
+        color: colors[theme].text,
+      },
+      storeList: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(1, 1fr)',
+        gap: '16px',
+        overflowX: 'auto',
+      },
+      storeItem: {
+        display: 'flex',
+        gap: '16px',
+        padding: '12px',
+        backgroundColor: theme === 'dark' ? '#1e1e1e' : '#f5f6fa',
+        borderRadius: '8px',
+        minWidth: '300px',
+        color: colors[theme].text,
+      },
+
+      // SETTINGS STYLES
+      personalInfo: {
+        display: 'flex',
+        gap: '24px',
+        marginBottom: '24px',
+      },
+      personalInfoColumn: {
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+      },
+      infoGroup: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+      },
+      label: {
+          fontSize: '14px',
+          color: '#636e72', // Medium gray text
+      },
+      input: {
+          padding: '8px',
+          borderRadius: '8px',
+          border: '1px solid #6A3CBC', // Purple border
+          fontSize: '14px',
+          color: '#2d3436', // Dark gray text
+          outline: 'none',
+          backgroundColor: '#f5f6fa', // Light gray background
+      },
+      rolePermissions: {
+          display: 'flex',
+          gap: '24px',
+      },
+      roleSection: {
+          flex: 1,
+          backgroundColor: '#f5f6fa', // Light gray background
+          borderRadius: '8px',
+          padding: '24px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      },
+      sectionTitle: {
+          fontSize: '20px',
+          fontWeight: '600',
+          color: '#2d3436', // Dark gray text
+          marginBottom: '16px',
+      },
+      roleOptions: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+      },
+      roleOption: {
+          fontSize: '14px',
+          color: '#2d3436', // Dark gray text
+      },
+      permissionsSection: {
+          flex: 2,
+          backgroundColor: '#f5f6fa', // Light gray background
+          borderRadius: '8px',
+          padding: '24px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      },
+      permissionsTable: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+      },
+
+      // ASSESSMENT STYLES
+      viewRange: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        marginBottom: '24px',
+      },
+      viewRangeLabel: {
+          fontSize: '14px',
+          color: '#636e72',
+      },
+      viewRangeDropdown: {
+          padding: '8px',
+          borderRadius: '8px',
+          border: '1px solid #6A3CBC',
+          fontSize: '14px',
+          color: '#2d3436',
+          outline: 'none',
+      },
+      financialMetrics: {
+          display: 'flex',
+          gap: '24px',
+          marginBottom: '24px',
+      },
+      financialMetric: {
+          flex: 1,
+          backgroundColor: '#f5f6fa',
+          borderRadius: '8px',
+          padding: '16px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      },
+      metricTitle: {
+          fontSize: '16px',
+          fontWeight: '600',
+          color: '#2d3436',
+          marginBottom: '8px',
+      },
+      metricValue: {
+          fontSize: '20px',
+          fontWeight: '600',
+          color: '#2d3436',
+      },
+      metricChange: {
+          fontSize: '14px',
+          color: '#00b894',
+      },
+      revenueBreakdown: {
+          backgroundColor: '#f5f6fa',
+          borderRadius: '8px',
+          padding: '24px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      },
+      sectionTitle: {
+          fontSize: '20px',
+          fontWeight: '600',
+          color: '#2d3436',
+          marginBottom: '16px',
+      },
+      revenueCategories: {
+          display: 'flex',
+          gap: '16px',
+      },
+      revenueCategory: {
+          fontSize: '14px',
+          color: '#2d3436',
+      },
+
+
+      // PRODUCTS STYLES
+      actions: {
+        display: 'flex',
+        gap: '16px',
+        marginBottom: '24px',
+      },
+      searchContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: theme === 'dark' ? '#2d2d2d' : '#ffffff',
+        borderRadius: '8px',
+        padding: '8px 12px',
+        border: `1px solid ${colors[theme].primary}`,
+        flex: 1,
+      },
+      filterContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: theme === 'dark' ? '#3700B3' : '#CDC1FF',
+        borderRadius: '8px',
+        padding: '8px 12px',
+        gap: '8px',
+      },
+      filterIcon: {
+        color: colors[theme].primary,
+      },
+      filterDropdown: {
+        border: 'none',
+        outline: 'none',
+        backgroundColor: 'transparent',
+        fontSize: '14px',
+        color: colors[theme].primary,
+      },
+      addProductButton: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '12px 16px',
+        backgroundColor: colors[theme].primary,
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+      },
+      addProductIcon: {
+        color: '#ffffff',
+      },
+      table: {
+        backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+        borderRadius: '8px',
+        boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+        overflow: 'hidden',
+      },
+      tableHeader: {
+        display: 'flex',
+        backgroundColor: theme === 'dark' ? '#2d2d2d' : '#f5f6fa',
+        padding: '12px 16px',
+        borderBottom: `2px solid ${colors[theme].primary}`,
+      },
+      tableHeaderCell: {
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+        color: colors[theme].text,
+      },
+      sortIcon: {
+        color: colors[theme].primary,
+      },
+      tableBody: {
+        display: 'flex',
+        flexDirection: 'column',
+      },
+      tableRow: {
+        display: 'flex',
+        padding: '12px 16px',
+        borderBottom: `1px solid ${theme === 'dark' ? '#2d2d2d' : '#f5f6fa'}`,
+        '&:hover': {
+          backgroundColor: theme === 'dark' ? '#2d2d2d' : '#f5f6fa',
+        },
+      },
+      tableCell: {
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '14px',
+        color: colors[theme].text,
+      },
+      checkbox: {
+        width: '16px',
+        height: '16px',
+        accentColor: colors[theme].primary,
+      },
+      productImage: {
+        width: '50px',
+        height: '50px',
+        borderRadius: '8px',
+      },
+      productName: {
+        fontWeight: '600',
+      },
+      statusBadge: {
+        padding: '4px 8px',
+        borderRadius: '12px',
+        color: '#ffffff',
+        fontSize: '12px',
+        fontWeight: '500',
+        backgroundColor: (status) => 
+          status === 'active' ? '#00b894' : 
+          status === 'inactive' ? '#d63031' : 
+          colors[theme].primary,
+      },
+      inactiveText: {
+        color: theme === 'dark' ? '#7f8c8d' : '#b2bec3',
+      },
+
+      // FORM STYLES
+      form: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+      },
+      formRow: {
+        display: 'flex',
+        gap: '24px',
+      },
+      formColumn: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+      },
+      formGroup: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+      },
+      label: {
+        fontSize: '14px',
+        color: colors[theme].text,
+      },
+      input: {
+        padding: '8px',
+        borderRadius: '8px',
+        border: `1px solid ${colors[theme].primary}`,
+        fontSize: '14px',
+        color: colors[theme].text,
+        outline: 'none',
+        backgroundColor: theme === 'dark' ? '#2d2d2d' : '#ffffff',
+      },
+      textarea: {
+        padding: '8px',
+        borderRadius: '8px',
+        border: `1px solid ${colors[theme].primary}`,
+        fontSize: '14px',
+        color: colors[theme].text,
+        outline: 'none',
+        resize: 'vertical',
+        backgroundColor: theme === 'dark' ? '#2d2d2d' : '#ffffff',
+      },
+      select: {
+        padding: '8px',
+        borderRadius: '8px',
+        border: `1px solid ${colors[theme].primary}`,
+        fontSize: '14px',
+        color: colors[theme].text,
+        outline: 'none',
+        backgroundColor: theme === 'dark' ? '#2d2d2d' : '#ffffff',
+      },
+      formActions: {
+        display: 'flex',
+        justifyContent: 'center',
+      },
+      saveButton: {
+        display: 'flex',
+        padding: '12px 24px',
+        backgroundColor: colors[theme].primary,
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+      },
+      saveIcon: {
+        marginRight: '8px',
+      },
+
+      // MODAL STYLES
+      modalOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+      },
+      modalContent: {
+        backgroundColor: colors[theme].cardBg,
+        borderRadius: '8px',
+        padding: '24px',
+        boxShadow: theme === 'dark' ? '0 4px 12px rgba(0, 0, 0, 0.5)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
+        width: '80%',
+        maxWidth: '800px',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        position: 'relative',
+      },
+      closeButton: {
+        position: 'absolute',
+        top: '16px',
+        right: '16px',
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: colors[theme].text,
+        fontSize: '16px',
+        cursor: 'pointer',
+      },
+
+      // UTILITY STYLES
+      textPrimary: {
+        color: colors[theme].primary,
+      },
+      textSecondary: {
+        color: colors[theme].secondary,
+      },
+      bgPrimary: {
+        backgroundColor: colors[theme].primary,
+      },
+      bgSecondary: {
+        backgroundColor: colors[theme].secondary,
+      },
+      success: {
+        color: '#00b894',
+      },
+      error: {
+        color: '#d63031',
+      },
+      warning: {
+        color: '#fdcb6e',
+      },
+      info: {
+        color: '#0984e3',
+      },
+    // }
+  };
+};
+
+
+
+--->frontend\src\app\page.tsx
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      router.push('/dashboard');
+    } else {
+      router.push('/login');
+    }
+  }, [router]);
+
+  return null;
+}
+
+
+
+
+--->frontend\src\app\layout.tsx
+'use client';
+import { Provider } from 'react-redux';
+import './globals.css';
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from './lib/ThemeContext';
+import { MenuProvider } from './lib/MenuContext';
+import { I18nextProvider } from 'react-i18next';
+import i18n from './lib/i18n';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { WebSocketProvider } from './lib/WebSocketContext';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import store from './lib/store';
+import type { RootState } from './lib/store';
+import { SidebarProvider } from './lib/SidebarContext';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
+import { login, logout } from './lib/authSlice';
+import LoadingSpinner from './components/LoadingSpinner';
+import { ReactNode } from 'react';
+
+const inter = Inter({ subsets: ['latin'] });
+
+// List of authentication routes that don't require a token
+const authRoutes = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password'
+];
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <Provider store={store}>
+          <I18nextProvider i18n={i18n}>
+            <ThemeProvider>
+              <ToastContainer />
+              {isAuthRoute ? (
+                children
+              ) : (
+                <AuthWrapper>
+                  <WebSocketProvider>
+                    <MenuProvider>
+                      <SidebarProvider>
+                        {children}
+                      </SidebarProvider>
+                    </MenuProvider>
+                  </WebSocketProvider>
+                </AuthWrapper>
+              )}
+            </ThemeProvider>
+          </I18nextProvider>
+        </Provider>
+      </body>
+    </html>
+  );
+}
+
+function AuthWrapper({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const [loading, setLoading] = useState(true);
+  const authCheckComplete = useRef(false);
+
+  useEffect(() => {
+    // if (typeof window === 'undefined') return; // Don't run on server
+    
+    if (authCheckComplete.current) return;
+    authCheckComplete.current = true;
+
+    const verifyAuth = async () => {
+      // Don't redirect if we're already on an auth route
+      if (authRoutes.some(route => pathname.startsWith(route))) {
+        setLoading(false);
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      const userString = localStorage.getItem('user');
+      const refreshToken = localStorage.getItem('refreshToken');
+
+      if (!token) {
+        dispatch(logout());
+        if (!authRoutes.some(route => pathname.startsWith(route))) {
+          router.push('/login');
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (token && userString) {
+        dispatch(login({
+          token,
+          user: JSON.parse(userString)
+        }));
+      }
+
+      try {
+        await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (error) {
+        try {
+          if (!refreshToken) throw new Error('No refresh token available');
+
+          const response = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+            { refreshToken },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          localStorage.setItem('token', response.data.token);
+          if (response.data.user) {
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+          }
+
+          dispatch(login({
+            token: response.data.token,
+            user: response.data.user || JSON.parse(userString || '{}')
+          }));
+        } catch (refreshError) {
+          dispatch(logout());
+          if (!authRoutes.some(route => pathname.startsWith(route))) {
+            router.push('/login');
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifyAuth();
+
+    const refreshInterval = setInterval(async () => {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) return;
+
+      try {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+          { refreshToken },
+          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        );
+
+        localStorage.setItem('token', response.data.token);
+        dispatch(login({
+          token: response.data.token,
+          user: response.data.user || JSON.parse(localStorage.getItem('user') || '{}')
+        }));
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    }, 15 * 60 * 1000);
+
+    return () => clearInterval(refreshInterval);
+  }, [dispatch, router, pathname]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && !authRoutes.some(route => pathname.startsWith(route))) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Redirecting to login...</p>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+
+
+--->frontend\src\app\lib\authSlice.js
+import { createSlice } from '@reduxjs/toolkit';
+const loadInitialState = () => {
+  if (typeof window === 'undefined') {
+    return {
+      isAuthenticated: false,
+      token: null,
+      user: null
+    };
+  }
+
+  return {
+    isAuthenticated: !!localStorage.getItem('token'),
+    token: localStorage.getItem('token'),
+    user: JSON.parse(localStorage.getItem('user') || 'null')
+  };
+};
+
+const authSlice = createSlice({
+  name: 'auth',
+  initialState: loadInitialState(),
+  reducers: {
+    login: (state, action) => {
+      state.isAuthenticated = true;
+      state.token = action.payload.token;
+      state.user = action.payload.user;
+      localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
+    },
+    logout: (state) => {
+      state.isAuthenticated = false;
+      state.token = null;
+      state.user = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('refreshToken');
+    },
+  },
+});
+export const { login, logout } = authSlice.actions;
+export default authSlice.reducer;
+
+
+
+--->frontend\src\app\lib\MenuContext.js
+'use client'; // Mark as a Client Component
+import { createContext, useState, useEffect } from 'react';
+import axios from 'axios';
+
+export const MenuContext = createContext();
+
+export const MenuProvider = ({ children }) => {
+  const [menuItems, setMenuItems] = useState([]);
+
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/menu`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      console.log("response",response);
+      
+      setMenuItems(response.data);
+    };
+    fetchMenuItems();
+  }, []);
+
+  return (
+    <MenuContext.Provider value={{ menuItems }}>
+      {children}
+    </MenuContext.Provider>
+  );
+};
+
+
+
+--->frontend\src\app\lib\SidebarContext.js
+'use client';
+import { createContext, useContext, useState, useEffect } from 'react';
+
+const SidebarContext = createContext();
+
+// Debounce function for resize events
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+export function SidebarProvider({ children }) {
+  const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
+    // Check if we're on the client side
+    if (typeof window !== 'undefined') {
+      // Try to get saved preference from localStorage
+      const saved = localStorage.getItem('sidebarVisible');
+      
+      // If no saved preference, use responsive default
+      if (saved === null) {
+        return window.innerWidth > 768; // Only visible by default on larger screens
+      }
+      
+      // Return saved preference if exists
+      return JSON.parse(saved);
+    }
+    // Server-side default
+    return true;
+  });
+
+  // Save to localStorage when sidebar visibility changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebarVisible', JSON.stringify(isSidebarVisible));
+    }
+  }, [isSidebarVisible]);
+
+  // Handle window resize with debounce for performance
+  useEffect(() => {
+    const handleResize = debounce(() => {
+      if (typeof window !== 'undefined') {
+        // Auto-hide on small screens, but respect user preference on larger screens
+        if (window.innerWidth <= 768) {
+          setIsSidebarVisible(false);
+        } else {
+          // Check localStorage again in case it changed
+          const saved = localStorage.getItem('sidebarVisible');
+          if (saved !== null) {
+            setIsSidebarVisible(JSON.parse(saved));
+          }
+        }
+      }
+    }, 100);
+
+    window.addEventListener('resize', handleResize);
+    // Initial check
+    handleResize();
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Alternative media query approach (commented out)
+  /*
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia('(max-width: 768px)');
+      const handleMediaChange = (e) => {
+        setIsSidebarVisible(!e.matches);
+      };
+      
+      mediaQuery.addListener(handleMediaChange);
+      return () => mediaQuery.removeListener(handleMediaChange);
+    }
+  }, []);
+  */
+
+  // Keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Toggle with Ctrl+/ or Cmd+/ (Mac)
+      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+        e.preventDefault(); // Prevent browser search from opening
+        setIsSidebarVisible(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return (
+    <SidebarContext.Provider value={{ 
+      isSidebarVisible, 
+      setIsSidebarVisible,
+      // Optional: expose a toggle function
+      toggleSidebar: () => setIsSidebarVisible(prev => !prev)
+    }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+}
+
+export function useSidebar() {
+  const context = useContext(SidebarContext);
+  if (!context) {
+    throw new Error('useSidebar must be used within a SidebarProvider');
+  }
+  return context;
+}
+
+// Optional: TypeScript types if you're using TypeScript
+/*
+interface SidebarContextType {
+  isSidebarVisible: boolean;
+  setIsSidebarVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  toggleSidebar: () => void;
+}
+*/
+
+
+
+--->frontend\src\app\lib\ThemeContext.js
+'use client';
+import { createContext, useContext, useState, useEffect } from 'react';
+
+export const ThemeContext = createContext();
+
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    // Get theme from localStorage or use default
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
+  const colors = {
+    light: {
+      primary: '#8253D7',
+      secondary: '#461B93',
+      background: '#ffffff',
+      text: '#2d3436',
+      cardBg: '#f5f6fa',
+      sidebarBg: '#8253D7',
+      sidebarText: '#ffffff',
+    },
+    dark: {
+      primary: '#BB86FC',
+      secondary: '#3700B3',
+      background: '#121212',
+      text: '#e1e1e1',
+      cardBg: '#1e1e1e',
+      sidebarBg: '#1a1a2e',
+      sidebarText: '#ffffff',
+    },
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme, colors }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}
+
+
+
+--->frontend\src\app\lib\WebSocketContext.js
+
+'use client';
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import axios from 'axios';
+
+export const WebSocketContext = createContext(null);
+
+const WS_CLOSE_CODES = {
+  NORMAL: 1000,
+  GOING_AWAY: 1001,
+  PROTOCOL_ERROR: 1002,
+  UNSUPPORTED: 1003,
+  ABNORMAL: 1006,
+  INTERNAL_ERROR: 4001//1011
+};
+
+export function WebSocketProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [socket, setSocket] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [connectionState, setConnectionState] = useState('disconnected');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const audioRef = useRef(null);
+  const reconnectAttempts = useRef(0);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+  
+  // Initialize audio on first user interaction
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      // Initialize the audioRef on first user interaction
+      const audio = new Audio('/mixkit-confirmation-tone-2867.wav');
+      audio.volume = 0.3; // Set volume to 30%
+      audioRef.current = audio;
+  
+      // Play and then stop it to unlock audio in strict browsers
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+      }).catch(console.error);
+  
+      // Remove event listener once the first interaction has occurred
+      document.removeEventListener('click', handleFirstInteraction);
+    };
+  
+    // Listen for the user's first interaction to initialize the audio
+    document.addEventListener('click', handleFirstInteraction);
+  
+    // Clean up the event listener when the component unmounts
+    return () => document.removeEventListener('click', handleFirstInteraction);
+  }, []);
+  
+  const playSound = useCallback((notification) => {
+    // 1. Check if sound is enabled globally
+    if (!soundEnabled) return;
+  
+    // 2. Get current user ID
+    const storedUser = localStorage.getItem('user');
+    const currentUserId = storedUser ? JSON.parse(storedUser).id : null;
+
+    
+    // 3. Don't play if notification is from current user
+    if (!currentUserId || notification.metadata?.senderId === currentUserId) return;
+    // 4. Mobile-specific handling (now with more nuance)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      // Special handling for mobile instead of complete silence
+      try {
+        // Mobile browsers require this to be triggered by user gesture
+        const audio = new Audio('/mixkit-confirmation-tone-2867.wav');
+        audio.volume = 0.3;
+        
+        // Some mobile browsers allow this if the user has interacted
+        audio.play().catch(e => {
+          console.log('Mobile audio blocked, showing visual feedback instead');
+          // Add visual feedback here (e.g., toast notification)
+        });
+        return;
+      } catch (e) {
+        console.log('Mobile audio error:', e);
+        return;
+      }
+    }
+
+    // 5. Desktop sound handling
+    try {
+      const audio = new Audio('/mixkit-confirmation-tone-2867.wav');
+      audio.volume = 0.3;
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log('Standard audio failed, trying fallback...');
+          try {
+            if (audioRef.current) {
+              audioRef.current.currentTime = 0;
+              audioRef.current.play().catch(e => console.log('Fallback failed:', e));
+            } else {
+              console.warn('Audio ref is not ready yet. Skipping fallback sound.');
+            }            
+          } catch (e) {
+            console.log('Fallback error:', e);
+          }
+        });
+      }
+    } catch (e) {
+      console.log('Audio init error:', e);
+    }
+  }, [soundEnabled]);
+
+  const connectWebSocket = useCallback(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('No token found. Skipping WebSocket connection.');
+      return null;
+    }
+  
+    const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL}?token=${token}`;
+    const ws = new WebSocket(wsUrl);
+  
+    ws.onopen = () => {
+      console.log('WebSocket Connected');
+      setSocket(ws);
+      setConnectionState('connected');
+      reconnectAttempts.current = 0;
+      
+      // Fetch initial notifications
+      axios.get(`${process.env.NEXT_PUBLIC_API_URL}/notifications`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+      .then(res => {
+        setNotifications(res.data);
+        setUnreadCount(res.data.filter(n => !n.isRead).length);
+      })
+      .catch(err => {
+        console.warn('Notification fetch failed:', err.message || err);
+      });
+    };
+  
+    ws.onmessage = (event) => {
+      try {
+        const { type, payload } = JSON.parse(event.data);
+        if (type === 'NOTIFICATION') {
+          setNotifications(prev => [payload, ...prev]);
+          setUnreadCount(prev => prev + 1);
+          playSound(payload);
+        }
+      } catch (err) {
+        console.error('Error processing WebSocket message:', err);
+      }
+    };
+  
+    ws.onclose = (event) => {
+      console.log(`WebSocket Disconnected: Code ${event.code}, Reason: ${event.reason || 'No reason provided'}`);
+      setSocket(null);
+      setConnectionState('disconnected');
+      
+      // Only reconnect if it wasn't a normal closure
+      if (event.code !== WS_CLOSE_CODES.NORMAL) {
+        const baseDelay = Math.min(5000 * Math.pow(2, reconnectAttempts.current), 30000);
+        const jitter = Math.random() * 5000;
+        const delay = Math.min(baseDelay + jitter, 60000);
+        
+        console.log(`Reconnecting in ${Math.round(delay/1000)}s...`);
+        reconnectAttempts.current += 1;
+        setTimeout(connectWebSocket, delay);
+      }
+      // if (event.code !== 1000) {
+      //   const reconnectDelay = Math.min(5000 + Math.random() * 5000, 30000); // 5-10s with jitter
+      //   console.log(`Attempting reconnect in ${Math.round(reconnectDelay/1000)}s...`);
+      //   setTimeout(() => connectWebSocket(), reconnectDelay);
+      // }
+    };
+  
+    ws.onerror = (event) => {
+      // Handle both Event and ErrorEvent types
+      const errorMessage = event.message || event.reason || 'Unknown WebSocket error';
+      // console.error('WebSocket Error:', errorMessage || 'Unknown error');
+      
+      // Close with appropriate code
+      // ws.close(1011, errorMessage); // 1011 = Internal Error
+      ws.close(WS_CLOSE_CODES.INTERNAL_ERROR, errorMessage); // 1011 = Internal Error
+      // console.error('WebSocket Closed due to error:', errorMessage);
+    };
+  
+    return ws;
+  }, [playSound]);  
+
+  // Connection management
+  useEffect(() => {
+    const ws = connectWebSocket();
+    
+    // Health check
+    const healthCheckInterval = setInterval(() => {
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'PING', timestamp: Date.now() }));
+      }
+    }, 30000);
+
+    return () => {
+      ws?.close(WS_CLOSE_CODES.NORMAL, 'Component unmounting');
+      clearInterval(healthCheckInterval);
+    };
+  }, [connectWebSocket]);
+  // useEffect(() => {
+  //   const ws = connectWebSocket();
+  //   return () => ws?.close();
+  // }, [connectWebSocket]);
+
+  const value = {
+    socket,
+    notifications,
+    unreadCount,
+    soundEnabled,
+    connectionState,
+    toggleSound: () => setSoundEnabled(!soundEnabled),
+    markAsRead: async (id) => {
+      try {
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${id}/read`,
+          {},
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+        setNotifications(prev => 
+          prev.map(n => n.id === id ? {...n, isRead: true} : n)
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } catch (err) {
+        console.error('Failed to mark as read:', err);
+      }
+    },
+    sendMessage: (message) => {
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify(message));
+      } else {
+        console.warn('Cannot send message - WebSocket not connected');
+      }
+    }
+  };
+  // const value = {
+  //   socket,
+  //   notifications,
+  //   unreadCount,
+  //   soundEnabled,
+  //   toggleSound: () => setSoundEnabled(!soundEnabled),
+  //   markAsRead: async (id) => {
+  //     try {
+  //       await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${id}/read`);
+  //       setNotifications(prev => 
+  //         prev.map(n => n.id === id ? {...n, isRead: true} : n)
+  //       );
+  //       setUnreadCount(prev => Math.max(0, prev - 1));
+  //     } catch (err) {
+  //       console.error('Error marking as read:', err);
+  //     }
+  //   },
+  //   sendMessage: (message) => {
+  //     if (socket?.readyState === WebSocket.OPEN) {
+  //       socket.send(JSON.stringify(message));
+  //     }
+  //   }
+  // };
+
+  return (
+    <WebSocketContext.Provider value={value}>
+      {children}
+    </WebSocketContext.Provider>
+  );
+}
+
+export function useWebSocket() {
+  const context = useContext(WebSocketContext);
+  if (!context) {
+    throw new Error('useWebSocket must be used within a WebSocketProvider');
+  }
+  return context;
+}
+
+
+
+--->frontend\src\app\lib\i18n.js
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import en from '../../../public/locales/en/common.json';
+import fr from '../../../public/locales/fr/common.json';
+import sw from '../../../public/locales/sw/common.json';
+
+i18n.use(initReactI18next).init({
+  resources: {
+    en: { translation: en },
+    fr: { translation: fr },
+  },
+  lng: 'en',
+  fallbackLng: 'en',
+  interpolation: {
+    escapeValue: false,
+  },
+});
+
+export default i18n;
+
+
+
+
+
+
+----------------------------------------------------------------
+After finishing HR modules no lets continue with Finance
+I'm continuing to develop Interprise resource planning system, i've completed HR modules/menus now i'm starting Finance modules/menus which are 
+1. Dashboard
+2. Assessment
+3. CLS
+4. Invoices
+5. Cash insight
+6. Income
+7. Expenses
+8. Reports
+9. Receipts
+
+BELOW ARE THE PRESENT UI CODES FOR FINANCE ROLE THAT NEEDS TO BE WORKED ON
+--->frontend\src\app\dashboard\page.js
+'use client'; // Mark as a Client Component
+import { useTranslation } from 'react-i18next';
+import Sidebar  from "../components/sidebar";
+import Navbar from "../components/navbar";
+import Header from "../components/header";
+
+import { useDispatch, useSelector } from 'react-redux';
+import React, { useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import { useTheme } from '../lib/ThemeContext'; // Updated import
+// import { ThemeContext } from '../lib/ThemeContext';
+import { useSharedStyles } from '../sharedStyles';
+import {
+  FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt,
+  FaArrowRight
+} from 'react-icons/fa'; // Icons from react-icons
+import { usePathname } from 'next/navigation';
+import { useSidebar } from '../lib/SidebarContext';
+import { MenuContext } from '../lib/MenuContext';
+import { recruitmentService } from '../hr/recruitment/services/recruitmentService';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+
+ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+
+const DashboardPage = () => {
+  const { theme, toggleTheme, colors } = useTheme(); // Updated to useTheme()
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth); // Get authentication state from Redux
+  const router = useRouter();
+  const { isSidebarVisible, toggleSidebar } = useSidebar();
+  const styles = useSharedStyles();
+  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [vacancies, setVacancies] = useState(0);
+  const [applicants, setApplicants] = useState(0);
+  const [interviews, setInterviews] = useState(0);
+  const [offers, setOffers] = useState(0); // <-- Add this!  
+  
+  const loadDashboardData = async () => {    
+    setLoading(true);
+    try {
+      const [dashboardData/*, statsData, interviewsData, offersData*/] = await Promise.all([
+        await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/dashboard`,{
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }).then(res => res.data),
+        // recruitmentService.getStats(),//openPositions, candidates, interviews, hires
+        // recruitmentService.getInterviews(/*{ status: 'Completed' }*/),
+        // recruitmentService.getOffers()
+      ]);
+      setUsers(dashboardData.users);
+      setRoles(dashboardData.roles);
+      setVacancies(dashboardData.openPositions);
+      setApplicants(dashboardData.candidates);
+      setInterviews(dashboardData.interviews);
+      setOffers(dashboardData.hires);
+    } catch (error) {
+      toast.error('Failed to load dashboard data');
+      console.log('Failed to load dashboard data',error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadDashboardData(); }, []);
+
+  const dashboardCards = [
+    { value: users, unit: 'Users', title: 'Registered Users' },
+    { value: roles, unit: 'Roles', title: 'System Roles' },
+    { value: vacancies, unit: 'Openings', title: 'Open Vacancies' },
+    { value: applicants, unit: 'Applicants', title: 'Total Applicants' },
+    { value: interviews, unit: 'Interviews', title: 'Scheduled Interviews' },
+  ];
+  
+
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.removeItem('token');
+    router.push('/login');
+  };
+  // Data for the bar chart
+  const barChartData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [
+      {
+        label: 'Sales',
+        data: [12, 19, 3, 5, 2, 3],
+        backgroundColor: colors[theme].primary, // Purple bars
+        borderRadius: 10, // Rounded corners
+      },
+    ],
+  };
+
+  return (
+    <div style={styles.container}>
+      {/* Header */}
+      <Header />
+
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        {/* Sidebar */}
+        <Sidebar/>
+
+        {/* Scrollable Content */}
+        {/*<div style={styles.content}>*/}
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
+          {/* Top Section: Dynamic Dashboard Cards */}
+          {loading ? <div>Loading dashboard...</div> : (
+            <div style={styles.topSection}>
+              <div style={styles.cardScrollContainer}>
+                {dashboardCards.map((card, index) => (
+                  <div key={index} style={styles.card}>
+                    <div style={styles.cardNumber}>{card.value}</div>
+                    <div style={styles.cardUnit}>{card.unit}</div>
+                    <div style={styles.cardTitle}>{card.title}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={styles.scrollArrow}>
+                <FaArrowRight style={styles.arrowIcon} />
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Section */}
+          <div style={styles.bottomSection}>
+            {/* First Row */}
+            <div style={styles.bottomRow}>
+              {/* Bar Chart Card */}
+              <div style={styles.bottomCard}>
+                <h3 style={styles.bottomCardTitle}>Sales Overview</h3>
+                <div style={styles.chartContainer}>
+                  <Bar data={barChartData} options={{ responsive: true }} />
+                </div>
+              </div>
+              {/* 3x2 Small Cards */}
+              <div style={styles.bottomCard}>
+                <h3 style={styles.bottomCardTitle}>Quick Stats</h3>
+                <div style={styles.smallCardGrid}>
+                  {[...Array(6)].map((_, index) => (
+                    <div key={index} style={styles.smallCard}>
+                      <FaBox style={styles.smallCardIcon} />
+                      <div style={styles.smallCardText}>Stat {index + 1}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Second Row */}
+            <div style={styles.bottomRow}>
+              {/* Stock Number List */}
+              <div style={styles.bottomCard}>
+                <h3 style={styles.bottomCardTitle}>Stock Numbers</h3>
+                <ul style={styles.stockList}>
+                  <li>Low stock items: 12</li>
+                  <li>Item categories: 6</li>
+                  <li>Refunded items: 3</li>
+                </ul>
+              </div>
+              {/* Store List */}
+              <div style={styles.bottomCard}>
+                <h3 style={styles.bottomCardTitle}>Store List</h3>
+                <div style={styles.storeList}>
+                  {[...Array(3)].map((_, index) => (
+                    <div key={index} style={styles.storeItem}>
+                      <div>Arusha</div>
+                      <div>20 employees</div>
+                      <div>100 items</div>
+                      <div>2 orders</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardPage;
+
+
+
+--->frontend\src\app\finance\reports\page.js
+'use client';
+import React, { useContext } from 'react';
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Header from '../../components/header';
+import Sidebar from '../../components/sidebar';
+import { useSharedStyles } from '../../sharedStyles';
+import { usePathname } from 'next/navigation';
+import { MenuContext } from '../../lib/MenuContext';
+import { useSidebar } from '../../lib/SidebarContext';
+
+const reportData = [
+  { month: 'Jan', revenue: 4000, expenses: 2400, profit: 1600 },
+  { month: 'Feb', revenue: 3000, expenses: 1398, profit: 1602 },
+  { month: 'Mar', revenue: 9800, expenses: 2000, profit: 7800 },
+  { month: 'Apr', revenue: 3908, expenses: 2780, profit: 1128 },
+  { month: 'May', revenue: 4800, expenses: 1890, profit: 2910 },
+  { month: 'Jun', revenue: 3800, expenses: 2390, profit: 1410 },
+];
+
+const kpiData = [
+  { name: 'Gross Margin', value: '42%', trend: 'up' },
+  { name: 'Operating Margin', value: '28%', trend: 'up' },
+  { name: 'Current Ratio', value: '1.8', trend: 'stable' },
+  { name: 'Quick Ratio', value: '1.2', trend: 'down' },
+];
+
+export default function ReportPage() {
+  const styles = useSharedStyles();
+  const pathname = usePathname();
+  const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible } = useSidebar();
+  const currentMenuItem = menuItems.find(item => item.link === pathname);
+  const pageTitle = currentMenuItem?.menu_item || 'Financial Reports';
+
+  return (
+    <div style={styles.container}>
+      <Header />
+      <div style={styles.mainContent}>
+        <Sidebar />
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
+          <h1 style={styles.pageTitle}>{pageTitle}</h1>
+
+          {/* Report Period Selector */}
+          <div className="bg-white p-4 rounded-lg shadow-md mb-6 flex justify-between items-center">
+            <div>
+              <select className="border rounded px-3 py-2 mr-2">
+                <option>Monthly</option>
+                <option>Quarterly</option>
+                <option>Annual</option>
+              </select>
+              <select className="border rounded px-3 py-2">
+                <option>Last 6 Months</option>
+                <option>Year to Date</option>
+                <option>Last 12 Months</option>
+              </select>
+            </div>
+            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              Export Report
+            </button>
+          </div>
+
+          {/* Financial Performance */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Financial Performance</h2>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={reportData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="revenue" fill="#8884d8" name="Revenue" />
+                  <Bar dataKey="expenses" fill="#ff7300" name="Expenses" />
+                  <Line type="monotone" dataKey="profit" stroke="#ff7300" name="Profit" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Key Financial Indicators */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Key Financial Indicators</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {kpiData.map((kpi, index) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-medium">{kpi.name}</h3>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      kpi.trend === 'up' ? 'bg-green-100 text-green-800' :
+                      kpi.trend === 'down' ? 'bg-red-100 text-red-800' :
+                      'bg-blue-100 text-blue-800'
+                    }`}>
+                      {kpi.trend === 'up' ? '↑' : kpi.trend === 'down' ? '↓' : '→'}
+                    </span>
+                  </div>
+                  <p className="text-2xl mt-2">{kpi.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Detailed Reports */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Available Reports</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { name: 'Balance Sheet', icon: '📊', date: 'Jun 2023' },
+                { name: 'Income Statement', icon: '📈', date: 'Jun 2023' },
+                { name: 'Cash Flow', icon: '💵', date: 'Jun 2023' },
+                { name: 'Budget vs Actual', icon: '📋', date: 'Q2 2023' },
+                { name: 'Tax Report', icon: '🏛️', date: 'Q2 2023' },
+                { name: 'Annual Report', icon: '📑', date: '2022' },
+              ].map((report, index) => (
+                <div key={index} className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
+                  <div className="flex items-center">
+                    <span className="text-2xl mr-3">{report.icon}</span>
+                    <div>
+                      <h3 className="font-medium">{report.name}</h3>
+                      <p className="text-sm text-gray-600">{report.date}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+--->frontend\src\app\finance\receipts\page.js
+'use client';
+import React, { useContext } from 'react';
+import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
+import Header from '../../components/header';
+import Sidebar from '../../components/sidebar';
+import { useSharedStyles } from '../../sharedStyles';
+import { usePathname } from 'next/navigation';
+import { MenuContext } from '../../lib/MenuContext';
+import { useSidebar } from '../../lib/SidebarContext';
+
+const receiptData = [
+  { date: '2023-06-01', amount: 120, category: 'Office Supplies', vendor: 'SupplyCo' },
+  { date: '2023-06-05', amount: 85, category: 'Meals', vendor: 'Restaurant' },
+  { date: '2023-06-08', amount: 450, category: 'Equipment', vendor: 'TechGadgets' },
+  { date: '2023-06-12', amount: 65, category: 'Office Supplies', vendor: 'SupplyCo' },
+  { date: '2023-06-15', amount: 1200, category: 'Software', vendor: 'CloudSoft' },
+  { date: '2023-06-20', amount: 320, category: 'Travel', vendor: 'HotelChain' },
+  { date: '2023-06-25', amount: 75, category: 'Meals', vendor: 'Cafe' },
+];
+
+const categorySpending = [
+  { category: 'Office Supplies', amount: 185, count: 2 },
+  { category: 'Meals', amount: 160, count: 2 },
+  { category: 'Equipment', amount: 450, count: 1 },
+  { category: 'Software', amount: 1200, count: 1 },
+  { category: 'Travel', amount: 320, count: 1 },
+];
+
+export default function ReceiptsPage() {
+  const styles = useSharedStyles();
+  const pathname = usePathname();
+  const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible } = useSidebar();
+  const currentMenuItem = menuItems.find(item => item.link === pathname);
+  const pageTitle = currentMenuItem?.menu_item || 'Receipts';
+
+  return (
+    <div style={styles.container}>
+      <Header />
+      <div style={styles.mainContent}>
+        <Sidebar />
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
+          <h1 style={styles.pageTitle}>{pageTitle}</h1>
+
+          {/* Receipts Overview */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Receipts Analysis</h2>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart
+                  margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                >
+                  <CartesianGrid />
+                  <XAxis dataKey="date" name="Date" />
+                  <YAxis dataKey="amount" name="Amount ({`${process.env.NEXT_PUBLIC_CURRENCY}`})" />
+                  <ZAxis dataKey="category" name="Category" range={[50, 300]} />
+                  <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                  <Legend />
+                  <Scatter name="Receipts" data={receiptData} fill="#8884d8" />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Category Breakdown */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Spending by Category</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="space-y-4">
+                  {categorySpending.map((category, index) => (
+                    <div key={index} className="border-b pb-2">
+                      <div className="flex justify-between mb-1">
+                        <span>{category.category}</span>
+                        <span>{`${process.env.NEXT_PUBLIC_CURRENCY}`}{category.amount}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div 
+                          className="h-2.5 rounded-full bg-blue-600" 
+                          style={{ width: `${(category.amount / 2500) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2">Recent Receipts</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white">
+                    <thead>
+                      <tr>
+                        <th className="py-2 px-4 border-b">Date</th>
+                        <th className="py-2 px-4 border-b">Vendor</th>
+                        <th className="py-2 px-4 border-b">Amount</th>
+                        <th className="py-2 px-4 border-b">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {receiptData.slice().reverse().map((receipt, index) => (
+                        <tr key={index}>
+                          <td className="py-2 px-4 border-b">{receipt.date}</td>
+                          <td className="py-2 px-4 border-b">{receipt.vendor}</td>
+                          <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{receipt.amount}</td>
+                          <td className="py-2 px-4 border-b">
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                              Processed
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Receipt Upload */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Upload New Receipt</h2>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <div className="mt-4">
+                <p className="text-gray-600">Drag and drop receipt images here, or</p>
+                <button className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                  Browse Files
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-gray-500">PNG, JPG, PDF up to 5MB</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+--->frontend\src\app\finance\invoices\page.js
+'use client';
+import React, { useContext } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Header from '../../components/header';
+import Sidebar from '../../components/sidebar';
+import { useSharedStyles } from '../../sharedStyles';
+import { usePathname } from 'next/navigation';
+import { MenuContext } from '../../lib/MenuContext';
+import { useSidebar } from '../../lib/SidebarContext';
+
+const invoiceStatusData = [
+  { status: 'Paid', count: 120 },
+  { status: 'Pending', count: 45 },
+  { status: 'Overdue', count: 15 },
+];
+
+const recentInvoices = [
+  { id: 'INV-001', client: 'Acme Corp', amount: 1250.50, date: '2023-06-15', dueDate: '2023-07-15', status: 'Paid' },
+  { id: 'INV-002', client: 'Globex Inc', amount: 890.00, date: '2023-06-18', dueDate: '2023-07-18', status: 'Pending' },
+  { id: 'INV-003', client: 'Soylent Corp', amount: 2450.75, date: '2023-06-20', dueDate: '2023-07-20', status: 'Pending' },
+  { id: 'INV-004', client: 'Initech LLC', amount: 1500.00, date: '2023-06-22', dueDate: '2023-07-22', status: 'Overdue' },
+];
+
+export default function InvoicesPage() {
+  const styles = useSharedStyles();
+  const pathname = usePathname();
+  const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible } = useSidebar();
+  const currentMenuItem = menuItems.find(item => item.link === pathname);
+  const pageTitle = currentMenuItem?.menu_item || 'Invoices';
+
+  return (
+    <div style={styles.container}>
+      <Header />
+      <div style={styles.mainContent}>
+        <Sidebar />
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
+          <h1 style={styles.pageTitle}>{pageTitle}</h1>
+
+          {/* Invoice Summary */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Invoice Status</h2>
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="h-64 w-full md:w-1/2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={invoiceStatusData}>
+                    <XAxis dataKey="status" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="count" fill="#8884d8" name="Number of Invoices" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full md:w-1/2">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="border rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold">120</div>
+                    <div className="text-sm text-gray-600">Paid</div>
+                  </div>
+                  <div className="border rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold">45</div>
+                    <div className="text-sm text-gray-600">Pending</div>
+                  </div>
+                  <div className="border rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold">15</div>
+                    <div className="text-sm text-gray-600">Overdue</div>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="flex justify-between mb-1">
+                    <span>Total Outstanding:</span>
+                    <span className="font-bold">{`${process.env.NEXT_PUBLIC_CURRENCY}`}12,450.25</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Average Days to Pay:</span>
+                    <span className="font-bold">14.5 days</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Invoices */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Recent Invoices</h2>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Create New Invoice
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 border-b">Invoice #</th>
+                    <th className="py-2 px-4 border-b">Client</th>
+                    <th className="py-2 px-4 border-b">Amount</th>
+                    <th className="py-2 px-4 border-b">Date</th>
+                    <th className="py-2 px-4 border-b">Due Date</th>
+                    <th className="py-2 px-4 border-b">Status</th>
+                    <th className="py-2 px-4 border-b">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentInvoices.map((invoice, index) => (
+                    <tr key={index}>
+                      <td className="py-2 px-4 border-b">{invoice.id}</td>
+                      <td className="py-2 px-4 border-b">{invoice.client}</td>
+                      <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{invoice.amount.toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b">{invoice.date}</td>
+                      <td className="py-2 px-4 border-b">{invoice.dueDate}</td>
+                      <td className="py-2 px-4 border-b">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          invoice.status === 'Paid' ? 'bg-green-100 text-green-800' :
+                          invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {invoice.status}
+                        </span>
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                        <button className="text-blue-600 hover:underline mr-2">View</button>
+                        <button className="text-gray-600 hover:underline">PDF</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+--->frontend\src\app\finance\income\page.js
+'use client';
+import React, { useContext } from 'react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Header from '../../components/header';
+import Sidebar from '../../components/sidebar';
+import { useSharedStyles } from '../../sharedStyles';
+import { usePathname } from 'next/navigation';
+import { MenuContext } from '../../lib/MenuContext';
+import { useSidebar } from '../../lib/SidebarContext';
+
+const incomeData = [
+  { month: 'Jan', revenue: 4000, profit: 2400 },
+  { month: 'Feb', revenue: 3000, profit: 1398 },
+  { month: 'Mar', revenue: 2000, profit: 9800 },
+  { month: 'Apr', revenue: 2780, profit: 3908 },
+  { month: 'May', revenue: 1890, profit: 4800 },
+  { month: 'Jun', revenue: 2390, profit: 3800 },
+];
+
+const incomeSources = [
+  { source: 'Product Sales', percentage: 65, amount: 84500 },
+  { source: 'Services', percentage: 20, amount: 26000 },
+  { source: 'Subscriptions', percentage: 10, amount: 13000 },
+  { source: 'Other', percentage: 5, amount: 6500 },
+];
+
+export default function IncomePage() {
+  const styles = useSharedStyles();
+  const pathname = usePathname();
+  const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible } = useSidebar();
+  const currentMenuItem = menuItems.find(item => item.link === pathname);
+  const pageTitle = currentMenuItem?.menu_item || 'Income';
+
+  return (
+    <div style={styles.container}>
+      <Header />
+      <div style={styles.mainContent}>
+        <Sidebar />
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
+          <h1 style={styles.pageTitle}>{pageTitle}</h1>
+
+          {/* Income Trends */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Monthly Income Trends</h2>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={incomeData}>
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Area type="monotone" dataKey="revenue" stroke="#8884d8" fill="#8884d8" name="Revenue" />
+                  <Area type="monotone" dataKey="profit" stroke="#82ca9d" fill="#82ca9d" name="Profit" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Income Sources */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Income Sources</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-medium mb-2">Source Breakdown</h3>
+                <div className="space-y-3">
+                  {incomeSources.map((source, index) => (
+                    <div key={index} className="border-b pb-2">
+                      <div className="flex justify-between mb-1">
+                        <span>{source.source}</span>
+                        <span>{source.percentage}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div 
+                          className="bg-blue-600 h-2.5 rounded-full" 
+                          style={{ width: `${source.percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2">Quarterly Comparison</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white">
+                    <thead>
+                      <tr>
+                        <th className="py-2 px-4 border-b">Quarter</th>
+                        <th className="py-2 px-4 border-b">Revenue</th>
+                        <th className="py-2 px-4 border-b">Growth</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023'].map((quarter, i) => (
+                        <tr key={i}>
+                          <td className="py-2 px-4 border-b">{quarter}</td>
+                          <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(50000 + Math.random() * 50000).toFixed(2)}</td>
+                          <td className="py-2 px-4 border-b text-green-600">+{(Math.random() * 20).toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Performing Products */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Top Performing Products</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 border-b">Product</th>
+                    <th className="py-2 px-4 border-b">Units Sold</th>
+                    <th className="py-2 px-4 border-b">Revenue</th>
+                    <th className="py-2 px-4 border-b">Profit Margin</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...Array(5)].map((_, i) => (
+                    <tr key={i}>
+                      <td className="py-2 px-4 border-b">Product {i + 1}</td>
+                      <td className="py-2 px-4 border-b">{Math.floor(Math.random() * 500) + 100}</td>
+                      <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(Math.random() * 10000).toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b text-green-600">{Math.floor(Math.random() * 30) + 10}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+--->frontend\src\app\finance\expenses\page.js
+'use client';
+import React, { useContext } from 'react';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Header from '../../components/header';
+import Sidebar from '../../components/sidebar';
+import { useSharedStyles } from '../../sharedStyles';
+import { usePathname } from 'next/navigation';
+import { MenuContext } from '../../lib/MenuContext';
+import { useSidebar } from '../../lib/SidebarContext';
+
+const expenseData = [
+  { name: 'Payroll', value: 45 },
+  { name: 'Office Supplies', value: 15 },
+  { name: 'Utilities', value: 12 },
+  { name: 'Marketing', value: 10 },
+  { name: 'Travel', value: 8 },
+  { name: 'Other', value: 10 },
+];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+
+export default function ExpensesPage() {
+  const styles = useSharedStyles();
+  const pathname = usePathname();
+  const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible } = useSidebar();
+  const currentMenuItem = menuItems.find(item => item.link === pathname);
+  const pageTitle = currentMenuItem?.menu_item || 'Expenses';
+
+  return (
+    <div style={styles.container}>
+      <Header />
+      <div style={styles.mainContent}>
+        <Sidebar />
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
+          <h1 style={styles.pageTitle}>{pageTitle}</h1>
+
+          {/* Expense Breakdown */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Expense Breakdown</h2>
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="h-64 w-full md:w-1/2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={expenseData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {expenseData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full md:w-1/2">
+                <h3 className="font-medium mb-2">Recent Expenses</h3>
+                <div className="space-y-3">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex justify-between border-b pb-2">
+                      <span>Expense {i + 1}</span>
+                      <span className="text-red-600">-${(Math.random() * 1000).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Department-wise Expenses */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Department-wise Expenses</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 border-b">Department</th>
+                    <th className="py-2 px-4 border-b">Budget</th>
+                    <th className="py-2 px-4 border-b">Spent</th>
+                    <th className="py-2 px-4 border-b">Remaining</th>
+                    <th className="py-2 px-4 border-b">% Used</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {['HR', 'Engineering', 'Marketing', 'Sales', 'Operations'].map((dept, i) => {
+                    const budget = 50000 + Math.random() * 50000;
+                    const spent = budget * (0.3 + Math.random() * 0.5);
+                    return (
+                      <tr key={i}>
+                        <td className="py-2 px-4 border-b">{dept}</td>
+                        <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{budget.toFixed(2)}</td>
+                        <td className="py-2 px-4 border-b text-red-600">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{spent.toFixed(2)}</td>
+                        <td className="py-2 px-4 border-b text-green-600">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(budget - spent).toFixed(2)}</td>
+                        <td className="py-2 px-4 border-b">{(spent/budget*100).toFixed(1)}%</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+--->frontend\src\app\finance\cis\page.js
+'use client';
+import React, { useContext } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Header from '../../components/header';
+import Sidebar from '../../components/sidebar';
+import { useSharedStyles } from '../../sharedStyles';
+import { usePathname } from 'next/navigation';
+import { MenuContext } from '../../lib/MenuContext';
+import { useSidebar } from '../../lib/SidebarContext';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+
+const customerData = [
+  { name: 'Jan', new: 12, returning: 8, churned: 2 },
+  { name: 'Feb', new: 15, returning: 10, churned: 1 },
+  { name: 'Mar', new: 8, returning: 12, churned: 3 },
+  { name: 'Apr', new: 20, returning: 15, churned: 2 },
+  { name: 'May', new: 18, returning: 18, churned: 1 },
+];
+
+export default function CustomerInfoPage() {
+  const styles = useSharedStyles();
+  const pathname = usePathname();
+  const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible } = useSidebar();
+  const currentMenuItem = menuItems.find(item => item.link === pathname);
+  const pageTitle = currentMenuItem?.menu_item || 'Customer Information';
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // useEffect(() => {
+  //   const fetchCustomers = async () => {
+  //     try {
+  //       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/customers');
+  //       setCustomers(response.data);
+  //     } catch (error) {
+  //       toast.error('Failed to fetch customers');
+  //       console.error('Error fetching customers:', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchCustomers();
+  // }, []);
+
+  return (
+    <div style={styles.container}>
+      <Header />
+      <div style={styles.mainContent}>
+        <Sidebar />
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
+          <h1 style={styles.pageTitle}>{pageTitle}</h1>
+
+          {/* Customer Trends */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Customer Trends</h2>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={customerData}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="new" fill="#4CAF50" name="New Customers" />
+                  <Bar dataKey="returning" fill="#2196F3" name="Returning Customers" />
+                  <Bar dataKey="churned" fill="#F44336" name="Churned Customers" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Customer List */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Customer List</h2>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Add Customer
+              </button>
+            </div>
+            {loading ? (
+              <div className="text-center py-8">Loading customers...</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b">Name</th>
+                      <th className="py-2 px-4 border-b">Email</th>
+                      <th className="py-2 px-4 border-b">Phone</th>
+                      <th className="py-2 px-4 border-b">Status</th>
+                      <th className="py-2 px-4 border-b">Last Purchase</th>
+                      <th className="py-2 px-4 border-b">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customers.length > 0 ? (
+                      customers.map((customer) => (
+                        <tr key={customer.id}>
+                          <td className="py-2 px-4 border-b">{customer.name}</td>
+                          <td className="py-2 px-4 border-b">{customer.email}</td>
+                          <td className="py-2 px-4 border-b">{customer.phone}</td>
+                          <td className="py-2 px-4 border-b">
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              customer.status === 'active' ? 'bg-green-100 text-green-800' :
+                              customer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {customer.status}
+                            </span>
+                          </td>
+                          <td className="py-2 px-4 border-b">{customer.lastPurchase || 'N/A'}</td>
+                          <td className="py-2 px-4 border-b">
+                            <button className="text-blue-600 hover:underline mr-2">View</button>
+                            <button className="text-gray-600 hover:underline">Edit</button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="py-4 text-center text-gray-500">No customers found</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+--->frontend\src\app\finance\cash-insights\page.js
+'use client';
+import React, { useContext } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Header from '../../components/header';
+import Sidebar from '../../components/sidebar';
+import { useSharedStyles } from '../../sharedStyles';
+import { usePathname } from 'next/navigation';
+import { MenuContext } from '../../lib/MenuContext';
+import { useSidebar } from '../../lib/SidebarContext';
+
+const cashData = [
+  { name: 'Jan', inflow: 4000, outflow: 2400 },
+  { name: 'Feb', inflow: 3000, outflow: 1398 },
+  { name: 'Mar', inflow: 2000, outflow: 9800 },
+  { name: 'Apr', inflow: 2780, outflow: 3908 },
+  { name: 'May', inflow: 1890, outflow: 4800 },
+];
+
+const accountBalances = [
+  { name: 'Operating Account', balance: 125000 },
+  { name: 'Payroll Account', balance: 87500 },
+  { name: 'Tax Account', balance: 42000 },
+];
+
+export default function CashInsightsPage() {
+  const styles = useSharedStyles();
+  const pathname = usePathname();
+  const { menuItems } = useContext(MenuContext);
+  const { isSidebarVisible } = useSidebar();
+  const currentMenuItem = menuItems.find(item => item.link === pathname);
+  const pageTitle = currentMenuItem?.menu_item || 'Cash Insights';
+
+  return (
+    <div style={styles.container}>
+      <Header />
+      <div style={styles.mainContent}>
+        <Sidebar />
+        <div style={{ 
+          marginLeft: isSidebarVisible ? '250px' : '0',
+          padding: '24px',
+          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+          transition: 'all 0.3s ease',
+        }}>
+          <h1 style={styles.pageTitle}>{pageTitle}</h1>
+
+          {/* Cash Flow Overview */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Cash Flow Overview</h2>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={cashData}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="inflow" fill="#4CAF50" name="Cash Inflow" />
+                  <Bar dataKey="outflow" fill="#F44336" name="Cash Outflow" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Account Balances */}
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 className="text-xl font-semibold mb-4">Account Balances</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {accountBalances.map((account, index) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <h3 className="font-medium">{account.name}</h3>
+                  <p className="text-2xl mt-2">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{account.balance.toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Cash Projections */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">30-Day Cash Projection</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 border-b">Date</th>
+                    <th className="py-2 px-4 border-b">Expected Inflow</th>
+                    <th className="py-2 px-4 border-b">Expected Outflow</th>
+                    <th className="py-2 px-4 border-b">Projected Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...Array(5)].map((_, i) => (
+                    <tr key={i}>
+                      <td className="py-2 px-4 border-b">{new Date(Date.now() + i * 86400000).toLocaleDateString()}</td>
+                      <td className="py-2 px-4 border-b text-green-600">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(Math.random() * 10000).toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b text-red-600">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(Math.random() * 8000).toFixed(2)}</td>
+                      <td className="py-2 px-4 border-b">{`${process.env.NEXT_PUBLIC_CURRENCY}`}{(125000 + i * 2000).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+--->frontend\src\app\finance\assessment\page.js
+
+
+
+
+
+--->I want you to incorporate backend and make these frontend to function with backend seamlesly just like we did in HR mudules
+--->Feel free to add components and useful stuffs that are required generlly by Finance
+--->Using deep analysis & experience implement common & professional needs that will be required in this module and make it fully functional for the ERP System.
+--->Add all basic reports in daily,monthly,annualy and export functionalities in csv,excel,pdf. Also the search functionlity to filter desired data
+---> Please keep it very simple, straight, professional and functional
+---> Any table needed make it in small case
+--->Give output codes result in full ad not in chunks for easy understanding, Also provide full location/directory on where to put them
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Implement similar patterns for other finance pages:
+For each finance page (expenses, invoices, receipts, income, cash-insights, assessment, reports, etc.), follow the same pattern:
+
+Create a page component
+Fetch data from the backend
+Display using reusable components like FinanceTable
+Implement CRUD operations
+Add export functionality
+Include charts/visualizations where appropriate
+
+JUST AS YOU PROPOSED HERE, MAKE THEM ALL PLEASE IN COMPLETE FULL CODE AND PATH TO FILES
+      finance/
+        components/
+          FinanceTable.js
+          FinanceForm.js (for create/edit)
+          FinanceChart.js (reusable chart component)
+        income/
+          page.js
+        expenses/
+          page.js
+        invoices/
+          page.js
+        receipts/
+          page.js
+        cash-insights/
+          page.js
+        assessment/
+          page.js
+        reports/
+          page.js
+        cis/
+          page.js
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Lets make final improvements 
+--->Implement the CIS(Collective Investment Scheme) but also leave the (CIS - Customer Information System) as a bonus
+--->Implement all the missing routes and controller methods like[
+  --api/finance/comparison
+  --
+]
+--->Complete to implement all customer controller methods [getCustomer, createCustomer, updateCustomer, deleteCustomer] including the search route[api/customers?search]
+--->Remember all api calls should be accompanied with auth, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+--->SOLVE THE ERROR [{"message":"FUNCTION enterprise_resource_planning.DATE_TRUNC does not exist"}] in the route: api/finance/reports/cash-flow?range=monthly
+--->Make the dashboard stats display different stats,cards,charts e.t.c and also be accordingly visible for Finance (user.role_id === 5) and for HR(user.role_id === 4)
+
+
+IMPLEMENT ALL THESE MISSING FUNCTIONS
+[
+cisController.getScheme
+cisController.updateScheme
+cisController.deleteScheme
+cisController.getAllInvestments
+cisController.createInvestment
+cisController.getInvestment
+cisController.updateInvestment
+cisController.deleteInvestment
+cisController.createNAVRecord
+cisController.getCISSummary
+]
+
