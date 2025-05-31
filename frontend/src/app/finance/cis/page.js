@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Header from '../../components/header';
 import Sidebar from '../../components/sidebar';
-import SchemeDetailModal from './SchemeDetailModal';
+import SchemeDetailModal from './SchemeDetailModal'; 
 import { useSidebar } from '../../lib/SidebarContext';
 import { useSharedStyles } from '../../sharedStyles';
 import { toast } from 'react-toastify';
