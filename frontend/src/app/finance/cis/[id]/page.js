@@ -1,4 +1,4 @@
-'use client'; // Add this line at the very top
+// 'use client'; // Add this line at the very top
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -179,4 +179,12 @@ const SchemeDetailPage = () => {
   );
 };
 
-export default SchemeDetailPage;
+// export default SchemeDetailPage;
+export async function generateStaticParams() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/finance/cis`);
+  const data = await res.json();
+
+  return data.map((item) => ({
+    id: item.id.toString(),
+  }));
+}
