@@ -292,7 +292,8 @@ exports.getIncomeStatement = async (req, res) => {
         'category',
         [Sequelize.fn('SUM', Sequelize.col('amount')), 'total']
       ],
-      group: ['category']
+      group: ['category'],
+      raw: true
     });
     
     const expenseByCategory = await db.finance.findAll({
@@ -301,7 +302,8 @@ exports.getIncomeStatement = async (req, res) => {
         'category',
         [Sequelize.fn('SUM', Sequelize.col('amount')), 'total']
       ],
-      group: ['category']
+      group: ['category'],
+      raw: true
     });
     
     const totalIncome = incomeByCategory.reduce((sum, item) => sum + parseFloat(item.total), 0);
@@ -344,7 +346,8 @@ exports.getBalanceSheet = async (req, res) => {
         'category',
         [Sequelize.fn('SUM', Sequelize.col('amount')), 'value']
       ],
-      group: ['category']
+      group: ['category'],
+      raw: true
     });
     
     const liabilities = await db.finance.findAll({
@@ -356,7 +359,8 @@ exports.getBalanceSheet = async (req, res) => {
         'category',
         [Sequelize.fn('SUM', Sequelize.col('amount')), 'value']
       ],
-      group: ['category']
+      group: ['category'],
+      raw: true
     });
     
     const totalAssets = assets.reduce((sum, item) => sum + parseFloat(item.value), 0);
@@ -446,57 +450,78 @@ exports.getBalanceSheet = async (req, res) => {
 //     res.status(500).json({ message: error.message });
 //   }
 // };
+
 exports.getCashFlowReport = async (req, res) => {
   try {
     const { range } = req.query;
     const { start, end } = getDateRange(range);
+
+    let groupBy = [];
+    let attributes = [];
+    let order = [];
     
-    // MySQL compatible date grouping (since DATE_TRUNC is PostgreSQL specific)
-    let groupBy;
+    // Define groupings and aliases
     switch (range) {
       case 'daily':
         groupBy = ['date'];
+        attributes = ['date'];
+        order = [['date', 'ASC']];
         break;
+
       case 'weekly':
-        groupBy = [Sequelize.fn('YEARWEEK', Sequelize.col('date'), 1)];
+        groupBy = [[Sequelize.fn('YEARWEEK', Sequelize.col('date'), 1), 'yearweek']];
+        attributes = [[Sequelize.fn('YEARWEEK', Sequelize.col('date'), 1), 'yearweek']];
+        order = [['yearweek', 'ASC']];
         break;
+
       case 'monthly':
         groupBy = [
-          Sequelize.fn('YEAR', Sequelize.col('date')),
-          Sequelize.fn('MONTH', Sequelize.col('date'))
+          [Sequelize.fn('YEAR', Sequelize.col('date')), 'year'],
+          [Sequelize.fn('MONTH', Sequelize.col('date')), 'month']
         ];
+        attributes = [
+          [Sequelize.fn('YEAR', Sequelize.col('date')), 'year'],
+          [Sequelize.fn('MONTH', Sequelize.col('date')), 'month']
+        ];
+        order = [['year', 'ASC'], ['month', 'ASC']];
         break;
+
       default:
         groupBy = ['date'];
+        attributes = ['date'];
+        order = [['date', 'ASC']];
     }
-    
+
+    // Fetch grouped cash flow
     const cashFlow = await db.finance.findAll({
       where: { date: { [Op.between]: [start, end] } },
       attributes: [
-        ...groupBy,
+        ...attributes,
         'type',
         [Sequelize.fn('SUM', Sequelize.col('amount')), 'amount']
       ],
-      group: [...groupBy, 'type'],
-      order: [groupBy[0]]
+      group: [...groupBy.map(g => (Array.isArray(g) ? g[1] : g)), 'type'],
+      order: order,
     });
-    
-    // Process results
+
+    // Build periods
     const periods = {};
     cashFlow.forEach(item => {
       let periodKey;
+
       if (range === 'weekly') {
-        const year = item.dataValues['YEARWEEK(date, 1)'].toString().substring(0, 4);
-        const week = item.dataValues['YEARWEEK(date, 1)'].toString().substring(4);
-        periodKey = `${year}-W${week.padStart(2, '0')}`;
+        const yearweek = item.dataValues.yearweek.toString();
+        const year = yearweek.substring(0, 4);
+        const week = yearweek.substring(4).padStart(2, '0');
+        periodKey = `${year}-W${week}`;
       } else if (range === 'monthly') {
-        const year = item.dataValues['YEAR(date)'];
-        const month = item.dataValues['MONTH(date)'].toString().padStart(2, '0');
+        const year = item.dataValues.year;
+        const month = item.dataValues.month.toString().padStart(2, '0');
         periodKey = `${year}-${month}`;
       } else {
         periodKey = moment(item.date).format('YYYY-MM-DD');
       }
-      
+
       if (!periods[periodKey]) {
         periods[periodKey] = {
           period: periodKey,
@@ -504,15 +529,15 @@ exports.getCashFlowReport = async (req, res) => {
           outflow: 0
         };
       }
-      
+
       if (item.type === 'income') {
         periods[periodKey].inflow += parseFloat(item.amount);
       } else {
         periods[periodKey].outflow += parseFloat(item.amount);
       }
     });
-    
-    // Calculate running balance
+
+    // Running balance
     let balance = 0;
     const result = Object.values(periods).map(period => {
       balance += period.inflow - period.outflow;
@@ -522,16 +547,104 @@ exports.getCashFlowReport = async (req, res) => {
       };
     });
     
+
     res.json({
       cashFlow: result,
       period: { start, end },
-      openingBalance: 0, // Would come from previous period in real system
+      openingBalance: 0,
       closingBalance: balance
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+// exports.getCashFlowReport = async (req, res) => {
+//   try {
+//     const { range } = req.query;
+//     const { start, end } = getDateRange(range);
+    
+//     // MySQL compatible date grouping (since DATE_TRUNC is PostgreSQL specific)
+//     let groupBy;
+//     switch (range) {
+//       case 'daily':
+//         groupBy = ['date'];
+//         break;
+//       case 'weekly':
+//         groupBy = [Sequelize.fn('YEARWEEK', Sequelize.col('date'), 1)];
+//         break;
+//       case 'monthly':
+//         groupBy = [
+//           Sequelize.fn('YEAR', Sequelize.col('date')),
+//           Sequelize.fn('MONTH', Sequelize.col('date'))
+//         ];
+//         break;
+//       default:
+//         groupBy = ['date'];
+//     }
+    
+//     const cashFlow = await db.finance.findAll({
+//       where: { date: { [Op.between]: [start, end] } },
+//       attributes: [
+//         ...groupBy,
+//         'type',
+//         [Sequelize.fn('SUM', Sequelize.col('amount')), 'amount']
+//       ],
+//       group: [...groupBy, 'type'],
+//       order: [groupBy[0]]
+//     });
+    
+//     // Process results
+//     const periods = {};
+//     cashFlow.forEach(item => {
+//       let periodKey;
+//       if (range === 'weekly') {
+//         const year = item.dataValues['YEARWEEK(date, 1)'].toString().substring(0, 4);
+//         const week = item.dataValues['YEARWEEK(date, 1)'].toString().substring(4);
+//         periodKey = `${year}-W${week.padStart(2, '0')}`;
+//       } else if (range === 'monthly') {
+//         const year = item.dataValues['YEAR(date)'];
+//         const month = item.dataValues['MONTH(date)'].toString().padStart(2, '0');
+//         periodKey = `${year}-${month}`;
+//       } else {
+//         periodKey = moment(item.date).format('YYYY-MM-DD');
+//       }
+      
+//       if (!periods[periodKey]) {
+//         periods[periodKey] = {
+//           period: periodKey,
+//           inflow: 0,
+//           outflow: 0
+//         };
+//       }
+      
+//       if (item.type === 'income') {
+//         periods[periodKey].inflow += parseFloat(item.amount);
+//       } else {
+//         periods[periodKey].outflow += parseFloat(item.amount);
+//       }
+//     });
+    
+//     // Calculate running balance
+//     let balance = 0;
+//     const result = Object.values(periods).map(period => {
+//       balance += period.inflow - period.outflow;
+//       return {
+//         ...period,
+//         balance
+//       };
+//     });
+    
+//     res.json({
+//       cashFlow: result,
+//       period: { start, end },
+//       openingBalance: 0, // Would come from previous period in real system
+//       closingBalance: balance
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 
 exports.getIncomeExpenseReport = async (req, res) => {
   try {
@@ -608,6 +721,8 @@ exports.getBudgetVsActual = async (req, res) => {
           -100
       };
     });
+    console.log("result:=> ",result);
+    
     
     res.json({
       budgetVsActual: result,
@@ -796,6 +911,223 @@ exports.getAccounts = async (req, res) => {
     
     res.json(accounts);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getComparisonData = async (req, res) => {
+  try {
+    const { periods = 4, interval = 'quarterly' } = req.query;
+    
+    // Example implementation - adjust to your actual data model
+    const comparisonData = await db.financialRecord.findAll({
+      where: {
+        date: {
+          [Op.gte]: getStartDate(interval, periods)
+        }
+      },
+      order: [['date', 'ASC']],
+      attributes: [
+        [sequelize.fn('DATE_TRUNC', interval, sequelize.col('date')), 'period'],
+        [sequelize.fn('SUM', sequelize.col('income')), 'income'],
+        [sequelize.fn('SUM', sequelize.col('expense')), 'expense']
+      ],
+      group: ['period']
+    });
+
+    res.json(comparisonData);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+function getStartDate(interval, periods) {
+  const now = new Date();
+  switch(interval) {
+    case 'monthly':
+      return new Date(now.setMonth(now.getMonth() - periods));
+    case 'quarterly':
+      return new Date(now.setMonth(now.getMonth() - (periods * 3)));
+    case 'yearly':
+      return new Date(now.setFullYear(now.getFullYear() - periods));
+    default:
+      return new Date(now.setMonth(now.getMonth() - periods));
+  }
+}
+
+exports.getFinancialComparisons = async (req, res) => {
+  try {
+    const { periods = 4, interval = 'quarterly' } = req.query;
+    
+    // Calculate date ranges
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    switch(interval) {
+      case 'monthly':
+        startDate.setMonth(endDate.getMonth() - periods);
+        break;
+      case 'quarterly':
+        startDate.setMonth(endDate.getMonth() - (periods * 3));
+        break;
+      case 'yearly':
+        startDate.setFullYear(endDate.getFullYear() - periods);
+        break;
+      default:
+        startDate.setMonth(endDate.getMonth() - periods);
+    }
+
+    // Get income data
+    const incomeData = await db.finance.findAll({
+      where: {
+        type: 'income',
+        date: { [Op.between]: [startDate, endDate] }
+      },
+      attributes: [
+        [Sequelize.fn('DATE_TRUNC', interval, Sequelize.col('date')), 'period'],
+        [Sequelize.fn('SUM', Sequelize.col('amount')), 'total']
+      ],
+      group: ['period'],
+      order: [['period', 'ASC']]
+    });
+
+    // Get expense data
+    const expenseData = await db.finance.findAll({
+      where: {
+        type: 'expense',
+        date: { [Op.between]: [startDate, endDate] }
+      },
+      attributes: [
+        [Sequelize.fn('DATE_TRUNC', interval, Sequelize.col('date')), 'period'],
+        [Sequelize.fn('SUM', Sequelize.col('amount')), 'total']
+      ],
+      group: ['period'],
+      order: [['period', 'ASC']]
+    });
+
+    // Combine data
+    const allPeriods = [...new Set([
+      ...incomeData.map(i => i.period),
+      ...expenseData.map(e => e.period)
+    ])].sort();
+
+    const comparison = allPeriods.map(period => {
+      const income = incomeData.find(i => i.period.getTime() === period.getTime())?.total || 0;
+      const expense = expenseData.find(e => e.period.getTime() === period.getTime())?.total || 0;
+      
+      return {
+        period: formatPeriod(period, interval),
+        income: parseFloat(income),
+        expense: parseFloat(expense),
+        profit: parseFloat(income) - parseFloat(expense)
+      };
+    });
+
+    res.json(comparison);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+function formatPeriod(date, interval) {
+  const options = { 
+    year: 'numeric',
+    month: interval === 'yearly' ? undefined : 'short'
+  };
+  return date.toLocaleDateString('en-US', options).replace(',', '');
+}
+
+// const { Op, Sequelize } = require('sequelize');
+
+exports.getFinancialComparison = async (req, res) => {
+  try {
+    const { periods = 4, interval = 'quarterly' } = req.query;
+
+    // Calculate date ranges
+    const endDate = new Date();
+    let startDate = new Date();
+
+    switch (interval) {
+      case 'monthly':
+        startDate.setMonth(endDate.getMonth() - periods);
+        break;
+      case 'quarterly':
+        startDate.setMonth(endDate.getMonth() - (periods * 3));
+        break;
+      case 'yearly':
+        startDate.setFullYear(endDate.getFullYear() - periods);
+        break;
+      default:
+        startDate.setMonth(endDate.getMonth() - periods);
+    }
+
+    // Define MySQL-compatible date grouping
+    const getPeriodExpression = () => {
+      switch (interval) {
+        case 'monthly':
+          return Sequelize.fn('DATE_FORMAT', Sequelize.col('date'), '%Y-%m'); // e.g., "2024-05"
+        case 'quarterly':
+          return Sequelize.literal("CONCAT(YEAR(date), '-Q', QUARTER(date))"); // e.g., "2024-Q2"
+        case 'yearly':
+          return Sequelize.fn('DATE_FORMAT', Sequelize.col('date'), '%Y'); // e.g., "2024"
+        default:
+          return Sequelize.fn('DATE_FORMAT', Sequelize.col('date'), '%Y-%m');
+      }
+    };
+
+    const periodExpr = getPeriodExpression();
+
+    // Fetch income data
+    const incomeData = await db.finance.findAll({
+      where: {
+        type: 'income',
+        date: { [Op.between]: [startDate, endDate] }
+      },
+      attributes: [
+        [periodExpr, 'period'],
+        [Sequelize.fn('SUM', Sequelize.col('amount')), 'total']
+      ],
+      group: ['period'],
+      order: [[Sequelize.col('period'), 'ASC']],
+      raw: true
+    });
+
+    // Fetch expense data
+    const expenseData = await db.finance.findAll({
+      where: {
+        type: 'expense',
+        date: { [Op.between]: [startDate, endDate] }
+      },
+      attributes: [
+        [periodExpr, 'period'],
+        [Sequelize.fn('SUM', Sequelize.col('amount')), 'total']
+      ],
+      group: ['period'],
+      order: [[Sequelize.col('period'), 'ASC']],
+      raw: true
+    });
+
+    // Combine unique periods
+    const allPeriods = Array.from(new Set([
+      ...incomeData.map(i => i.period),
+      ...expenseData.map(e => e.period)
+    ])).sort();
+
+    // Merge data into one comparison object
+    const comparison = allPeriods.map(period => {
+      const income = incomeData.find(i => i.period === period)?.total || 0;
+      const expense = expenseData.find(e => e.period === period)?.total || 0;
+
+      return {
+        period,
+        income: parseFloat(income),
+        expense: parseFloat(expense),
+        profit: parseFloat(income) - parseFloat(expense)
+      };
+    });
+
+    res.json(comparison);
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };

@@ -115,7 +115,7 @@ export default function IncomePage() {
                 <div className="border-b pb-2">
                   <p className="text-gray-600">Total Income</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {incomeData.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}
+                    {incomeData.reduce((sum, item) => sum + parseFloat(item.amount), 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="border-b pb-2">
@@ -126,7 +126,7 @@ export default function IncomePage() {
                   <p className="text-gray-600">Average Income</p>
                   <p className="text-2xl font-bold">
                     {incomeData.length > 0 
-                      ? (incomeData.reduce((sum, item) => sum + item.amount, 0) / incomeData.length).toLocaleString(undefined, {
+                      ? (incomeData.reduce((sum, item) => sum + parseFloat(item.amount), 0) / incomeData.length).toLocaleString(undefined, {
                           maximumFractionDigits: 2
                         })
                       : 0}

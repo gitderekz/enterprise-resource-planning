@@ -10,6 +10,9 @@ router.get('/schemes/:id', auth, cisController.getScheme);
 router.put('/schemes/:id', auth, cisController.updateScheme);
 router.delete('/schemes/:id', auth, cisController.deleteScheme);
 
+// Add to cisRoutes.js
+// router.get('/comparison', auth, cisController.getFinancialComparison);
+
 // Investment routes
 router.get('/investments', auth, cisController.getAllInvestments);
 router.post('/investments', auth, cisController.createInvestment);

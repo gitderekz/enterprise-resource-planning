@@ -15,6 +15,9 @@ export default function CashInsightsPage() {
   const [loading, setLoading] = useState(true);
   const styles = useSharedStyles();
   const [accountBalances, setAccountBalances] = useState([]);
+  const [openingBalance, setOpeningBalance] = useState(0);
+  const [closingBalance, setClosingBalance] = useState(0);
+  const [period, setPeriod] = useState({ start: '', end: '' });
 
   const fetchCashFlow = async () => {
     try {
@@ -29,8 +32,15 @@ export default function CashInsightsPage() {
         })
       ]);
       
-      setCashFlow(flowResponse.data);
+      // setCashFlow(flowResponse.data);
+      // setCashFlow(flowResponse.data.cashFlow);
+      setCashFlow(Array.isArray(flowResponse.data.cashFlow) ? flowResponse.data.cashFlow : []);
       setAccountBalances(balancesResponse.data);
+      setCashFlow(flowResponse.data.cashFlow);
+      setOpeningBalance(flowResponse.data.openingBalance);
+      setClosingBalance(flowResponse.data.closingBalance);
+      setPeriod(flowResponse.data.period);
+      toast.success('Cash flow data fetched successfully');
     } catch (error) {
       toast.error('Failed to fetch cash flow data');
     } finally {
@@ -81,6 +91,12 @@ export default function CashInsightsPage() {
               <option value="monthly">Monthly</option>
             </select>
           </div>
+
+          {!loading && (
+            <p className="text-sm text-gray-500 mb-4">
+              From {new Date(period.start).toLocaleDateString()} to {new Date(period.end).toLocaleDateString()}
+            </p>
+          )}
           
           {loading ? (
             <div className="text-center py-8">Loading cash flow data...</div>
@@ -94,6 +110,29 @@ export default function CashInsightsPage() {
                   height={400}
                 />
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="bg-white rounded-lg shadow p-4">
+                  <h3 className="font-medium">Opening Balance</h3>
+                  <p className="text-2xl mt-2 text-blue-600">
+                    {openingBalance.toLocaleString(undefined, {
+                      style: 'currency',
+                      currency: 'TSH'
+                    })}
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-lg shadow p-4">
+                  <h3 className="font-medium">Closing Balance</h3>
+                  <p className="text-2xl mt-2 text-green-600">
+                    {closingBalance.toLocaleString(undefined, {
+                      style: 'currency',
+                      currency: 'TSH'
+                    })}
+                  </p>
+                </div>
+              </div>
+
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 {accountBalances.map((account, index) => (
@@ -102,7 +141,7 @@ export default function CashInsightsPage() {
                     <p className="text-2xl mt-2">
                       {account.balance.toLocaleString(undefined, {
                         style: 'currency',
-                        currency: 'USD'
+                        currency: 'TSH'
                       })}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">
@@ -131,19 +170,19 @@ export default function CashInsightsPage() {
                           <td className="py-2 px-4 border text-green-600">
                             {item.inflow.toLocaleString(undefined, {
                               style: 'currency',
-                              currency: 'USD'
+                              currency: 'TSH'
                             })}
                           </td>
                           <td className="py-2 px-4 border text-red-600">
                             {item.outflow.toLocaleString(undefined, {
                               style: 'currency',
-                              currency: 'USD'
+                              currency: 'TSH'
                             })}
                           </td>
                           <td className="py-2 px-4 border">
                             {item.balance.toLocaleString(undefined, {
                               style: 'currency',
-                              currency: 'USD'
+                              currency: 'TSH'
                             })}
                           </td>
                         </tr>

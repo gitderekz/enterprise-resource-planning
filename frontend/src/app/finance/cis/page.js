@@ -1,473 +1,408 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import Header from '../../components/header';
 import Sidebar from '../../components/sidebar';
-import { useSharedStyles } from '../../sharedStyles';
-import FinanceTable from '../components/FinanceTable';
-import FinanceForm from '../components/FinanceForm';
-import FinanceChart from '../components/FinanceChart';
 import { useSidebar } from '../../lib/SidebarContext';
-import axios from 'axios';
+import { useSharedStyles } from '../../sharedStyles';
 import { toast } from 'react-toastify';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { FaPlus, FaSearch, FaFilter, FaDownload } from 'react-icons/fa';
 
-export default function CustomerInfoPage() {
-  const { isSidebarVisible } = useSidebar();
-  const [customers, setCustomers] = useState([]);
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+const CISPage = () => {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const styles = useSharedStyles();
-  const [showForm, setShowForm] = useState(false);
-  const [currentCustomer, setCurrentCustomer] = useState(null);
+  const [schemes, setSchemes] = useState([]);
+  const [summary, setSummary] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const { isSidebarVisible } = useSidebar();
+  const styles = useSharedStyles();
+  const schemesPerPage = 10;
 
-  const fetchCustomers = async () => {
+  const fetchCISData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/customers`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { search: searchTerm }
-      });
-      setCustomers(response.data);
+      const [summaryRes, schemesRes] = await Promise.all([
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cis/reports/summary`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cis/schemes`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+      
+      setSummary(summaryRes.data);
+      setSchemes(schemesRes.data);
     } catch (error) {
-      toast.error('Failed to fetch customers');
+      toast.error('Failed to load CIS data');
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCustomers();
-  }, [searchTerm]);
+    fetchCISData();
+  }, []);
 
-  const handleDelete = async (id) => {
+  // Filter and search functionality
+  const filteredSchemes = schemes.filter(scheme => {
+    const matchesSearch = scheme.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         scheme.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filter === 'all' || scheme.status === filter;
+    return matchesSearch && matchesFilter;
+  });
+
+  // Pagination logic
+  const indexOfLastScheme = currentPage * schemesPerPage;
+  const indexOfFirstScheme = indexOfLastScheme - schemesPerPage;
+  const currentSchemes = filteredSchemes.slice(indexOfFirstScheme, indexOfLastScheme);
+  const totalPages = Math.ceil(filteredSchemes.length / schemesPerPage);
+
+  // Data for charts
+  const aumData = summary.map(scheme => ({
+    name: scheme.name,
+    value: scheme.aum
+  }));
+
+  const statusData = [
+    { name: 'Active', value: schemes.filter(s => s.status === 'active').length },
+    { name: 'Closed', value: schemes.filter(s => s.status === 'closed').length },
+    { name: 'Suspended', value: schemes.filter(s => s.status === 'suspended').length }
+  ];
+
+  const riskProfileData = [
+    { name: 'Low', value: schemes.filter(s => s.riskProfile === 'low').length },
+    { name: 'Medium', value: schemes.filter(s => s.riskProfile === 'medium').length },
+    { name: 'High', value: schemes.filter(s => s.riskProfile === 'high').length }
+  ];
+
+  const handleExport = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/customers/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cis/reports/export`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
       });
-      toast.success('Customer deleted successfully');
-      fetchCustomers();
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'cis-report.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      toast.success('Export started successfully');
     } catch (error) {
-      toast.error('Failed to delete customer');
+      toast.error('Failed to export data');
+      console.error(error);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
       {/* Header */}
       <Header />
 
-      {/* Main Content */}
-      <div style={styles.mainContent}>
-        {/* Sidebar */}
-        <Sidebar/>
+        {/* Main Content */}
+        <div style={styles.mainContent}>
+            {/* Sidebar */}
+            <Sidebar/>
 
-        {/* Scrollable Content */}
-        {/*<div style={styles.content}>*/}
-        <div style={{ 
-          marginLeft: isSidebarVisible ? '250px' : '0',
-          padding: '24px',
-          width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
-          transition: 'all 0.3s ease',
-        }}>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Customer Information System</h1>
-            <button
-              onClick={() => {
-                setCurrentCustomer(null);
-                setShowForm(true);
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Add Customer
-            </button>
-          </div>
-          
-          {showForm ? (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                {currentCustomer ? 'Edit' : 'Add New'} Customer
-              </h2>
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                // Implement customer form submission
-              }}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Name</label>
-                    <input
-                      type="text"
-                      className="w-full p-2 border rounded"
-                      defaultValue={currentCustomer?.name || ''}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Email</label>
-                    <input
-                      type="email"
-                      className="w-full p-2 border rounded"
-                      defaultValue={currentCustomer?.email || ''}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Phone</label>
-                    <input
-                      type="tel"
-                      className="w-full p-2 border rounded"
-                      defaultValue={currentCustomer?.phone || ''}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Status</label>
-                    <select
-                      className="w-full p-2 border rounded"
-                      defaultValue={currentCustomer?.status || 'active'}
+            {/* Scrollable Content */}
+            {/*<div style={styles.content}>*/}
+            <div style={{ 
+            marginLeft: isSidebarVisible ? '250px' : '0',
+            padding: '24px',
+            width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
+            transition: 'all 0.3s ease',
+            }}>
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold">Collective Investment Schemes</h1>
+                    <div className="flex space-x-4">
+                    <button 
+                        onClick={() => router.push('/finance/cis/new')}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center space-x-2 hover:bg-blue-700 transition"
                     >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Address</label>
-                  <textarea
-                    className="w-full p-2 border rounded"
-                    rows="3"
-                    defaultValue={currentCustomer?.address || ''}
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className="px-4 py-2 border rounded hover:bg-gray-100"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
-          ) : (
-            <>
-              <div className="mb-6">
-                <input
-                  type="text"
-                  placeholder="Search customers..."
-                  className="w-full p-2 border rounded md:w-1/3"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <FinanceChart 
-                  data={[
-                    { name: 'Active', value: customers.filter(c => c.status === 'active').length },
-                    { name: 'Inactive', value: customers.filter(c => c.status === 'inactive').length }
-                  ]}
-                  type="pie"
-                  title="Customer Status"
-                />
-                <div className="bg-white rounded-lg shadow p-4">
-                  <h2 className="text-lg font-semibold mb-4">Customer Summary</h2>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-gray-600">Total Customers</p>
-                      <p className="text-2xl font-bold">{customers.length}</p>
+                        <FaPlus /> <span>New Scheme</span>
+                    </button>
+                    <button 
+                        onClick={handleExport}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md flex items-center space-x-2 hover:bg-green-700 transition"
+                    >
+                        <FaDownload /> <span>Export</span>
+                    </button>
                     </div>
-                    <div>
-                      <p className="text-gray-600">Active Customers</p>
-                      <p className="text-xl text-green-600">
-                        {customers.filter(c => c.status === 'active').length}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">New This Month</p>
-                      <p className="text-xl">
-                        {customers.filter(c => {
-                          const created = new Date(c.createdAt);
-                          const now = new Date();
-                          return created.getMonth() === now.getMonth() && 
-                                 created.getFullYear() === now.getFullYear();
-                        }).length}
-                      </p>
-                    </div>
-                  </div>
                 </div>
-              </div>
-              
-              <div className="bg-white rounded-lg shadow">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full bg-white">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="py-2 px-4 border">Name</th>
-                        <th className="py-2 px-4 border">Email</th>
-                        <th className="py-2 px-4 border">Phone</th>
-                        <th className="py-2 px-4 border">Status</th>
-                        <th className="py-2 px-4 border">Last Purchase</th>
-                        <th className="py-2 px-4 border">Actions</th>
-                      </tr>
+
+                {/* Search and Filter */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-4 rounded-lg shadow">
+                    <div className="relative flex-grow">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FaSearch className="text-gray-400" />
+                    </div>
+                    <input
+                        type="text"
+                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Search schemes..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center">
+                        <FaFilter className="text-gray-400 mr-2" />
+                        <select
+                        className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        >
+                        <option value="all">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="closed">Closed</option>
+                        <option value="suspended">Suspended</option>
+                        </select>
+                    </div>
+                    </div>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold">Total Schemes</h3>
+                    <p className="text-2xl font-bold mt-2">{schemes.length}</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold">Total AUM</h3>
+                    <p className="text-2xl font-bold mt-2">
+                        {summary.reduce((sum, scheme) => sum + scheme.aum, 0).toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'TSH'
+                        })}
+                    </p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold">Active Schemes</h3>
+                    <p className="text-2xl font-bold mt-2">
+                        {schemes.filter(s => s.status === 'active').length}
+                    </p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold">Total Investors</h3>
+                    <p className="text-2xl font-bold mt-2">
+                        {summary.reduce((sum, scheme) => sum + scheme.totalInvestors, 0)}
+                    </p>
+                    </div>
+                </div>
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* AUM Distribution */}
+                    <div className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold mb-4">AUM Distribution</h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                            data={aumData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            >
+                            {aumData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                            </Pie>
+                            <Tooltip 
+                            formatter={(value) => value.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'TSH'
+                            })}
+                            />
+                            <Legend />
+                        </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    </div>
+                    
+                    {/* Status Distribution */}
+                    <div className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold mb-4">Status Distribution</h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={statusData}>
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="value" fill="#8884d8" name="Schemes" />
+                        </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                    </div>
+                    
+                    {/* Risk Profile */}
+                    <div className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold mb-4">Risk Profile</h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                            data={riskProfileData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            >
+                            <Cell fill="#4CAF50" />
+                            <Cell fill="#FFC107" />
+                            <Cell fill="#F44336" />
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                        </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    </div>
+                </div>
+
+                {/* Schemes Table */}
+                <div className="bg-white p-4 rounded-lg shadow overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheme</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AUM</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Investors</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NAV</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
                     </thead>
-                    <tbody>
-                      {loading ? (
-                        <tr>
-                          <td colSpan="6" className="py-4 text-center">Loading customers...</td>
-                        </tr>
-                      ) : customers.length > 0 ? (
-                        customers.map((customer) => (
-                          <tr key={customer.id} className="hover:bg-gray-50">
-                            <td className="py-2 px-4 border">{customer.name}</td>
-                            <td className="py-2 px-4 border">{customer.email}</td>
-                            <td className="py-2 px-4 border">{customer.phone}</td>
-                            <td className="py-2 px-4 border">
-                              <span className={`px-2 py-1 rounded text-xs ${
-                                customer.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {customer.status}
-                              </span>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {currentSchemes.map((scheme) => {
+                        const schemeSummary = summary.find(s => s.id === scheme.id) || {};
+                        return (
+                            <tr key={scheme.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">{scheme.name}</div>
+                                <div className="text-sm text-gray-500 truncate max-w-xs">{scheme.description}</div>
                             </td>
-                            <td className="py-2 px-4 border">
-                              {customer.lastPurchase 
-                                ? new Date(customer.lastPurchase).toLocaleDateString() 
-                                : 'Never'}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                ${scheme.status === 'active' ? 'bg-green-100 text-green-800' : 
+                                    scheme.status === 'closed' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                {scheme.status}
+                                </span>
                             </td>
-                            <td className="py-2 px-4 border">
-                              <button 
-                                onClick={() => {
-                                  setCurrentCustomer(customer);
-                                  setShowForm(true);
-                                }}
-                                className="text-blue-500 hover:text-blue-700 mr-2"
-                              >
+                            <td className="px-6 py-4 whitespace-nowrap capitalize">{scheme.riskProfile}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                {schemeSummary.aum?.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'TSH'
+                                }) || 'N/A'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">{schemeSummary.totalInvestors || 0}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                {schemeSummary.latestNav?.toLocaleString('en-US', {
+                                style: 'currency',
+                                currency: 'TSH'
+                                }) || 'N/A'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button
+                                onClick={() => router.push(`/finance/cis/${scheme.id}`)}
+                                className="text-blue-600 hover:text-blue-900 mr-3"
+                                >
+                                View
+                                </button>
+                                <button
+                                onClick={() => router.push(`/finance/cis/${scheme.id}/edit`)}
+                                className="text-indigo-600 hover:text-indigo-900"
+                                >
                                 Edit
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(customer.id)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                Delete
-                              </button>
+                                </button>
                             </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="6" className="py-4 text-center text-gray-500">No customers found</td>
-                        </tr>
-                      )}
+                            </tr>
+                        );
+                        })}
                     </tbody>
-                  </table>
+                    </table>
+
+                    {/* Pagination */}
+                    {filteredSchemes.length > schemesPerPage && (
+                    <div className="flex items-center justify-between mt-4 px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm text-gray-700">
+                            Showing <span className="font-medium">{indexOfFirstScheme + 1}</span> to{' '}
+                            <span className="font-medium">
+                                {Math.min(indexOfLastScheme, filteredSchemes.length)}
+                            </span>{' '}
+                            of <span className="font-medium">{filteredSchemes.length}</span> results
+                            </p>
+                        </div>
+                        <div>
+                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                    currentPage === page
+                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                }`}
+                                >
+                                {page}
+                                </button>
+                            ))}
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                            </nav>
+                        </div>
+                        </div>
+                    </div>
+                    )}
                 </div>
-              </div>
-            </>
-          )}
+            </div>
         </div>
-      </div>
     </div>
   );
-}
+};
 
-
-
-// 'use client';
-// import React, { useContext } from 'react';
-// import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-// import Header from '../../components/header';
-// import Sidebar from '../../components/sidebar';
-// import { useSharedStyles } from '../../sharedStyles';
-// import { usePathname } from 'next/navigation';
-// import { MenuContext } from '../../lib/MenuContext';
-// import { useSidebar } from '../../lib/SidebarContext';
-// import axios from 'axios';
-// import { toast } from 'react-toastify';
-// import { useEffect, useState } from 'react';
-
-// const customerData = [
-//   { name: 'Jan', new: 12, returning: 8, churned: 2 },
-//   { name: 'Feb', new: 15, returning: 10, churned: 1 },
-//   { name: 'Mar', new: 8, returning: 12, churned: 3 },
-//   { name: 'Apr', new: 20, returning: 15, churned: 2 },
-//   { name: 'May', new: 18, returning: 18, churned: 1 },
-// ];
-
-// export default function CustomerInfoPage() {
-//   const styles = useSharedStyles();
-//   const pathname = usePathname();
-//   const { menuItems } = useContext(MenuContext);
-//   const { isSidebarVisible } = useSidebar();
-//   const currentMenuItem = menuItems.find(item => item.link === pathname);
-//   const pageTitle = currentMenuItem?.menu_item || 'Customer Information';
-//   const [customers, setCustomers] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   // useEffect(() => {
-//   //   const fetchCustomers = async () => {
-//   //     try {
-//   //       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/customers');
-//   //       setCustomers(response.data);
-//   //     } catch (error) {
-//   //       toast.error('Failed to fetch customers');
-//   //       console.error('Error fetching customers:', error);
-//   //     } finally {
-//   //       setLoading(false);
-//   //     }
-//   //   };
-//   //   fetchCustomers();
-//   // }, []);
-
-//   return (
-//     <div style={styles.container}>
-//       <Header />
-//       <div style={styles.mainContent}>
-//         <Sidebar />
-//         <div style={{ 
-//           marginLeft: isSidebarVisible ? '250px' : '0',
-//           padding: '24px',
-//           width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
-//           transition: 'all 0.3s ease',
-//         }}>
-//           <h1 style={styles.pageTitle}>{pageTitle}</h1>
-
-//           {/* Customer Trends */}
-//           <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-//             <h2 className="text-xl font-semibold mb-4">Customer Trends</h2>
-//             <div className="h-80">
-//               <ResponsiveContainer width="100%" height="100%">
-//                 <BarChart data={customerData}>
-//                   <XAxis dataKey="name" />
-//                   <YAxis />
-//                   <Tooltip />
-//                   <Legend />
-//                   <Bar dataKey="new" fill="#4CAF50" name="New Customers" />
-//                   <Bar dataKey="returning" fill="#2196F3" name="Returning Customers" />
-//                   <Bar dataKey="churned" fill="#F44336" name="Churned Customers" />
-//                 </BarChart>
-//               </ResponsiveContainer>
-//             </div>
-//           </div>
-
-//           {/* Customer List */}
-//           <div className="bg-white p-6 rounded-lg shadow-md">
-//             <div className="flex justify-between items-center mb-4">
-//               <h2 className="text-xl font-semibold">Customer List</h2>
-//               <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-//                 Add Customer
-//               </button>
-//             </div>
-//             {loading ? (
-//               <div className="text-center py-8">Loading customers...</div>
-//             ) : (
-//               <div className="overflow-x-auto">
-//                 <table className="min-w-full bg-white">
-//                   <thead>
-//                     <tr>
-//                       <th className="py-2 px-4 border-b">Name</th>
-//                       <th className="py-2 px-4 border-b">Email</th>
-//                       <th className="py-2 px-4 border-b">Phone</th>
-//                       <th className="py-2 px-4 border-b">Status</th>
-//                       <th className="py-2 px-4 border-b">Last Purchase</th>
-//                       <th className="py-2 px-4 border-b">Actions</th>
-//                     </tr>
-//                   </thead>
-//                   <tbody>
-//                     {customers.length > 0 ? (
-//                       customers.map((customer) => (
-//                         <tr key={customer.id}>
-//                           <td className="py-2 px-4 border-b">{customer.name}</td>
-//                           <td className="py-2 px-4 border-b">{customer.email}</td>
-//                           <td className="py-2 px-4 border-b">{customer.phone}</td>
-//                           <td className="py-2 px-4 border-b">
-//                             <span className={`px-2 py-1 rounded text-xs ${
-//                               customer.status === 'active' ? 'bg-green-100 text-green-800' :
-//                               customer.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
-//                               'bg-red-100 text-red-800'
-//                             }`}>
-//                               {customer.status}
-//                             </span>
-//                           </td>
-//                           <td className="py-2 px-4 border-b">{customer.lastPurchase || 'N/A'}</td>
-//                           <td className="py-2 px-4 border-b">
-//                             <button className="text-blue-600 hover:underline mr-2">View</button>
-//                             <button className="text-gray-600 hover:underline">Edit</button>
-//                           </td>
-//                         </tr>
-//                       ))
-//                     ) : (
-//                       <tr>
-//                         <td colSpan="6" className="py-4 text-center text-gray-500">No customers found</td>
-//                       </tr>
-//                     )}
-//                   </tbody>
-//                 </table>
-//               </div>
-//             )}
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-// // *****************************
-
-
-
-// // 'use client'; 
-// // import React, { useContext } from 'react';
-// // import {
-// //   FaSearch, FaCommentDots, FaBell, FaCog, FaUserCircle, FaHome, FaBox, FaList, FaStore, FaWallet, FaPlus, FaSignOutAlt,
-// // } from 'react-icons/fa'; // Icons from react-icons
-// // import { usePathname } from 'next/navigation';
-// // import { useSidebar } from '../../lib/SidebarContext';
-// // import { MenuContext } from '../../lib/MenuContext';
-// // import Header from '../../components/header';
-// // import Sidebar from '../../components/sidebar';
-// // import { useSharedStyles } from '../../sharedStyles';
-
-// // const cisPage = () => {
-  
-// //   const styles = useSharedStyles();
-// //   const pathname = usePathname();
-// //   const { menuItems } = useContext(MenuContext);
-// //   const { isSidebarVisible, toggleSidebar } = useSidebar();
-
-// //   // Find the matching menu item
-// //   const currentMenuItem = menuItems.find(item => item.link === pathname);
-// //   const pageTitle = currentMenuItem?.link || currentMenuItem?.menu_item || 'Untitled Page';
-
-// //   return (
-// //     <div style={styles.container}>
-// //       {/* Header */}
-// //       <Header />
-
-// //       {/* Main Content */}
-// //       <div style={styles.mainContent}>
-// //         {/* Sidebar */}
-// //         <Sidebar />
-
-// //         {/* Scrollable Content */}
-// //         {/* <div style={styles.content}> */}
-// //         <div style={{ 
-// //           marginLeft: isSidebarVisible ? '250px' : '0',
-// //           padding: '24px',
-// //           width: isSidebarVisible ? 'calc(100% - 250px)' : '100%',
-// //           transition: 'all 0.3s ease',
-// //         }}>
-// //             <h1 style={styles.pageTitle}>{pageTitle}</h1>
-
-// //             {/* TODO */}
-
-// //         </div>
-// //       </div>
-// //     </div>
-// //   );
-// // };
-
-// // export default cisPage;
+export default CISPage;

@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  
+  // output: 'export',
+    output: 'standalone', // or remove output config entirely
+
   // Optional: Add basePath if your app is not deployed at the root domain
   // basePath: '/your-subdirectory',
   

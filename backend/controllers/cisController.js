@@ -207,7 +207,7 @@ exports.getCISSummary = async (req, res) => {
 
     const investments = await db.cisInvestment.findAll({
       attributes: [
-        [db.Sequelize.fn('SUM', db.Sequelize.col('amount')), 'totalInvested'],
+        [db.Sequelize.fn('SUM', db.Sequelize.col('amountInvested')), 'totalInvested'],
         [db.Sequelize.fn('COUNT', db.Sequelize.col('id')), 'totalInvestors'],
         'schemeId'
       ],

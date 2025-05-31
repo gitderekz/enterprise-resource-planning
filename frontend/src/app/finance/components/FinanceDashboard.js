@@ -53,7 +53,7 @@ const FinanceDashboard = ({ stats }) => {
                     <div className="flex items-end mt-2">
                     <span className="text-2xl font-bold mr-2">
                         {typeof card.value === 'number' 
-                        ? card.value.toLocaleString(undefined, { style: 'currency', currency: 'USD' })
+                        ? card.value.toLocaleString(undefined, { style: 'currency', currency: 'TSH' })
                         : card.value}
                     </span>
                     <span className={`text-sm ${card.trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>

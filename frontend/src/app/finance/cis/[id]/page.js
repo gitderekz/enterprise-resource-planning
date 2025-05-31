@@ -1,3 +1,4 @@
+'use client'; // Add this line at the very top
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -87,7 +88,7 @@ const SchemeDetailPage = () => {
             {navHistory.length > 0 
               ? navHistory[0].navPerUnit.toLocaleString('en-US', {
                   style: 'currency',
-                  currency: 'USD'
+                  currency: 'TSH'
                 })
               : 'N/A'}
           </p>
@@ -97,7 +98,7 @@ const SchemeDetailPage = () => {
           <p className="text-2xl font-bold mt-2">
             {(scheme.totalUnits * (navHistory.length > 0 ? navHistory[0].navPerUnit : 0)).toLocaleString('en-US', {
               style: 'currency',
-              currency: 'USD'
+              currency: 'TSH'
             })}
           </p>
         </div>
@@ -117,7 +118,7 @@ const SchemeDetailPage = () => {
               <Tooltip 
                 formatter={(value) => value.toLocaleString('en-US', {
                   style: 'currency',
-                  currency: 'USD'
+                  currency: 'TSH'
                 })}
               />
               <Legend />
@@ -160,7 +161,7 @@ const SchemeDetailPage = () => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   {investment.amount.toLocaleString('en-US', {
                     style: 'currency',
-                    currency: 'USD'
+                    currency: 'TSH'
                   })}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

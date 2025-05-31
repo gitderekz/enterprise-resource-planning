@@ -48,8 +48,8 @@ export default function ExpensesPage() {
     
     const processed = Object.keys(categoryMap).map(category => ({
       name: category,
-      value: categoryMap[category]
-    }));
+      value: parseFloat(categoryMap[category])
+    }));    
     
     setChartData(processed);
   };
@@ -132,14 +132,14 @@ export default function ExpensesPage() {
                     <div>
                       <p className="text-gray-600">Total Expenses</p>
                       <p className="text-2xl font-bold text-red-600">
-                        {expenses.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}
+                        {expenses.reduce((sum, item) => sum + parseFloat(item.amount), 0).toLocaleString()}
                       </p>
                     </div>
                     <div>
                       <p className="text-gray-600">Average Expense</p>
                       <p className="text-xl">
                         {expenses.length > 0 
-                          ? (expenses.reduce((sum, item) => sum + item.amount, 0) / expenses.length).toLocaleString(undefined, {
+                          ? (expenses.reduce((sum, item) => sum + parseFloat(item.amount), 0) / expenses.length).toLocaleString(undefined, {
                               maximumFractionDigits: 2
                             })
                           : 0}

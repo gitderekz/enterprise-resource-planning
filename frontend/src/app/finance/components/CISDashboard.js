@@ -82,7 +82,7 @@ const CISDashboard = () => {
           <p className="text-2xl font-bold mt-2">
             {summary.reduce((sum, scheme) => sum + scheme.aum, 0).toLocaleString('en-US', {
               style: 'currency',
-              currency: 'USD'
+              currency: 'TSH'
             })}
           </p>
         </div>
@@ -119,7 +119,7 @@ const CISDashboard = () => {
                 <Tooltip 
                   formatter={(value) => value.toLocaleString('en-US', {
                     style: 'currency',
-                    currency: 'USD'
+                    currency: 'TSH'
                   })}
                 />
                 <Legend />
@@ -139,7 +139,7 @@ const CISDashboard = () => {
                 <Tooltip 
                   formatter={(value) => value.toLocaleString('en-US', {
                     style: 'currency',
-                    currency: 'USD'
+                    currency: 'TSH'
                   })}
                 />
                 <Legend />
@@ -180,14 +180,14 @@ const CISDashboard = () => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   {scheme.aum.toLocaleString('en-US', {
                     style: 'currency',
-                    currency: 'USD'
+                    currency: 'TSH'
                   })}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">{scheme.totalInvestors}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {scheme.latestNav.toLocaleString('en-US', {
                     style: 'currency',
-                    currency: 'USD'
+                    currency: 'TSH'
                   })}
                 </td>
               </tr>

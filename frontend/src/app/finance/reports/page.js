@@ -95,7 +95,7 @@ export default function FinancialReportsPage() {
                         }`}>
                           {category.amount.toLocaleString(undefined, {
                             style: 'currency',
-                            currency: 'USD'
+                            currency: 'TSH'
                           })}
                         </td>
                         <td className="py-2 px-4 border">
@@ -119,13 +119,13 @@ export default function FinancialReportsPage() {
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold mb-4">Assets</h3>
                 <div className="space-y-3">
-                  {reportData.assets.map((asset, index) => (
+                  {reportData.assets?.items?.map((asset, index) => (
                     <div key={index} className="flex justify-between border-b pb-2">
-                      <span>{asset.name}</span>
+                      <span>{asset.name??asset.category}</span>
                       <span className="text-green-600">
-                        {asset.amount.toLocaleString(undefined, {
+                        {asset.value?.toLocaleString(undefined, {
                           style: 'currency',
-                          currency: 'USD'
+                          currency: 'TSH'
                         })}
                       </span>
                     </div>
@@ -133,9 +133,9 @@ export default function FinancialReportsPage() {
                   <div className="flex justify-between font-bold pt-2">
                     <span>Total Assets</span>
                     <span className="text-green-600">
-                      {reportData.totalAssets.toLocaleString(undefined, {
+                      {reportData.assets?.total?.toLocaleString(undefined, {
                         style: 'currency',
-                        currency: 'USD'
+                        currency: 'TSH'
                       })}
                     </span>
                   </div>
@@ -145,13 +145,13 @@ export default function FinancialReportsPage() {
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold mb-4">Liabilities & Equity</h3>
                 <div className="space-y-3">
-                  {reportData.liabilities.map((liability, index) => (
+                  {reportData.liabilities?.items?.map((liability, index) => (
                     <div key={index} className="flex justify-between border-b pb-2">
-                      <span>{liability.name}</span>
+                      <span>{liability.category}</span>
                       <span className="text-red-600">
-                        {liability.amount.toLocaleString(undefined, {
+                        {liability.value?.toLocaleString(undefined, {
                           style: 'currency',
-                          currency: 'USD'
+                          currency: 'TSH'
                         })}
                       </span>
                     </div>
@@ -159,18 +159,18 @@ export default function FinancialReportsPage() {
                   <div className="flex justify-between border-b pb-2">
                     <span>Equity</span>
                     <span className="text-blue-600">
-                      {reportData.equity.toLocaleString(undefined, {
+                      {reportData.equity?.toLocaleString(undefined, {
                         style: 'currency',
-                        currency: 'USD'
+                        currency: 'TSH'
                       })}
                     </span>
                   </div>
                   <div className="flex justify-between font-bold pt-2">
                     <span>Total Liabilities & Equity</span>
                     <span>
-                      {reportData.totalLiabilitiesAndEquity.toLocaleString(undefined, {
+                      {reportData.totalLiabilitiesAndEquity?.toLocaleString(undefined, {
                         style: 'currency',
-                        currency: 'USD'
+                        currency: 'TSH'
                       })}
                     </span>
                   </div>
@@ -180,6 +180,131 @@ export default function FinancialReportsPage() {
           </div>
         );
       
+      case 'cash-flow':
+        return (
+          <div className="space-y-6">
+            <FinanceChart
+              // data={reportData.cashFlow?.map(item => ({
+              //   name: item.period,
+              //   inflow: Number(item.inflow),
+              //   outflow: Number(item.outflow)
+              // }))}
+              data={reportData.cashFlow?.flatMap(item => [
+                { name: `${item.period} (Inflow)`, value: item.inflow, color: "#16a34a"},
+                { name: `${item.period} (Outflow)`, value: item.outflow , color: "#dc2626"}
+              ])}
+              type="bar"
+              title="Cash Flow Overview"
+            />
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">Cash Flow Details</h3>
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="py-2 px-4 border">Period</th>
+                    <th className="py-2 px-4 border">Inflow</th>
+                    <th className="py-2 px-4 border">Outflow</th>
+                    <th className="py-2 px-4 border">Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportData.cashFlow?.map((item, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="py-2 px-4 border">{item.period}</td>
+                      <td className="py-2 px-4 border text-green-600">
+                        {item.inflow.toLocaleString(undefined, {
+                          style: 'currency', currency: 'TSH'
+                        })}
+                      </td>
+                      <td className="py-2 px-4 border text-red-600">
+                        {item.outflow.toLocaleString(undefined, {
+                          style: 'currency', currency: 'TSH'
+                        })}
+                      </td>
+                      <td className="py-2 px-4 border font-medium">
+                        {item.balance.toLocaleString(undefined, {
+                          style: 'currency', currency: 'TSH'
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="mt-4 text-sm text-gray-500">
+                Period: {new Date(reportData.period?.start).toLocaleDateString()} → {new Date(reportData.period?.end).toLocaleDateString()} <br />
+                Closing Balance: {reportData.closingBalance?.toLocaleString(undefined, {
+                  style: 'currency', currency: 'TSH'
+                })}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'budget-vs-actual':
+        return (
+          <div className="space-y-6">
+            <FinanceChart
+              // data={reportData.budgetVsActual?.map(item => ({
+              //   name: item.category,
+              //   value: item.actual
+              // }))}
+              data={reportData.budgetVsActual?.map(item => ({
+                name: item.category,
+                budget: item.budget,
+                actual: item.actual
+              }))}
+              type="bar"
+              title="Actual vs Budget by Category"
+            />
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">Budget vs Actual</h3>
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="py-2 px-4 border">Category</th>
+                    <th className="py-2 px-4 border">Type</th>
+                    <th className="py-2 px-4 border">Budget</th>
+                    <th className="py-2 px-4 border">Actual</th>
+                    <th className="py-2 px-4 border">Variance</th>
+                    <th className="py-2 px-4 border">Variance %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportData.budgetVsActual?.map((item, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="py-2 px-4 border capitalize">{item.category}</td>
+                      <td className="py-2 px-4 border capitalize">{item.type}</td>
+                      <td className="py-2 px-4 border">
+                        {item.budget.toLocaleString(undefined, { style: 'currency', currency: 'TSH' })}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {item.actual.toLocaleString(undefined, { style: 'currency', currency: 'TSH' })}
+                      </td>
+                      <td className={`py-2 px-4 border ${item.variance < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {item.variance?.toLocaleString(undefined, { style: 'currency', currency: 'TSH' })}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {item.variancePercentage}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="mt-4 text-sm text-gray-500">
+                Total Budget: {reportData.totalBudget?.toLocaleString(undefined, {
+                  style: 'currency', currency: 'TSH'
+                })}<br />
+                Total Actual: {(reportData.totalActual || 0).toLocaleString(undefined, {
+                  style: 'currency', currency: 'TSH'
+                })}
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="bg-white rounded-lg shadow p-6">

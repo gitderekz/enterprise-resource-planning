@@ -128,8 +128,9 @@ export default function InvoicesPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <FinanceChart 
                   data={[
-                    { name: 'Pending', value: invoices.filter(i => i.status === 'pending').length },
                     { name: 'Completed', value: invoices.filter(i => i.status === 'completed').length },
+                    { name: 'Pending', value: invoices.filter(i => i.status === 'pending').length },
+                    { name: 'Unpaid', value: invoices.filter(i => i.status === 'unpaid').length },
                     { name: 'Cancelled', value: invoices.filter(i => i.status === 'cancelled').length },
                   ]}
                   type="pie"
@@ -145,7 +146,7 @@ export default function InvoicesPage() {
                     <div>
                       <p className="text-gray-600">Total Amount</p>
                       <p className="text-2xl font-bold text-green-600">
-                        {invoices.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}
+                        {invoices.reduce((sum, item) => sum + parseFloat(item.amount), 0).toLocaleString()}
                       </p>
                     </div>
                     <div>
@@ -153,7 +154,7 @@ export default function InvoicesPage() {
                       <p className="text-xl text-red-600">
                         {invoices
                           .filter(i => i.status === 'pending')
-                          .reduce((sum, item) => sum + item.amount, 0)
+                          .reduce((sum, item) => sum + parseFloat(item.amount), 0)
                           .toLocaleString()}
                       </p>
                     </div>
