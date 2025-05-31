@@ -17,6 +17,7 @@
     "chart.js": "^4.4.8",
     "class-variance-authority": "^0.7.1",
     "file-saver": "^2.0.5",
+    "framer-motion": "^12.15.0",
     "googleapis": "^148.0.0",
     "i18next": "^24.2.3",
     "lucide-react": "^0.510.0",

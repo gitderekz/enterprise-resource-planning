@@ -286,3 +286,85 @@ exports.getPerformanceReport = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getFinancialComparison = async (req, res) => {
+  try {
+    const { periods = 4, interval = 'quarterly' } = req.query;
+    
+    // Calculate date ranges
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    switch(interval) {
+      case 'monthly':
+        startDate.setMonth(endDate.getMonth() - periods);
+        break;
+      case 'quarterly':
+        startDate.setMonth(endDate.getMonth() - (periods * 3));
+        break;
+      case 'yearly':
+        startDate.setFullYear(endDate.getFullYear() - periods);
+        break;
+      default:
+        startDate.setMonth(endDate.getMonth() - periods);
+    }
+
+    // Get income data
+    const incomeData = await db.finance.findAll({
+      where: {
+        type: 'income',
+        date: { [Op.between]: [startDate, endDate] }
+      },
+      attributes: [
+        [sequelize.fn('DATE_TRUNC', interval, sequelize.col('date')), 'period'],
+        [sequelize.fn('SUM', sequelize.col('amount')), 'total']
+      ],
+      group: ['period'],
+      order: [['period', 'ASC']]
+    });
+
+    // Get expense data
+    const expenseData = await db.finance.findAll({
+      where: {
+        type: 'expense',
+        date: { [Op.between]: [startDate, endDate] }
+      },
+      attributes: [
+        [sequelize.fn('DATE_TRUNC', interval, sequelize.col('date')), 'period'],
+        [sequelize.fn('SUM', sequelize.col('amount')), 'total']
+      ],
+      group: ['period'],
+      order: [['period', 'ASC']]
+    });
+
+    // Combine data
+    const allPeriods = [...new Set([
+      ...incomeData.map(i => i.period),
+      ...expenseData.map(e => e.period)
+    ])].sort();
+
+    const comparison = allPeriods.map(period => {
+      const income = incomeData.find(i => i.period.getTime() === period.getTime())?.total || 0;
+      const expense = expenseData.find(e => e.period.getTime() === period.getTime())?.total || 0;
+      
+      return {
+        period: formatPeriod(period, interval),
+        income: parseFloat(income),
+        expense: parseFloat(expense),
+        profit: parseFloat(income) - parseFloat(expense)
+      };
+    });
+
+    res.json(comparison);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+function formatPeriod(date, interval) {
+  const options = { 
+    year: 'numeric',
+    month: interval === 'yearly' ? undefined : 'short'
+  };
+  return date.toLocaleDateString('en-US', options).replace(',', '');
+}

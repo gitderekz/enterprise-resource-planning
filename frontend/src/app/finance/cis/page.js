@@ -14,6 +14,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const CISPage = () => {
   const router = useRouter();
+  const [selectedSchemeId, setSelectedSchemeId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [schemes, setSchemes] = useState([]);
   const [summary, setSummary] = useState([]);
@@ -333,7 +334,7 @@ const CISPage = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <button
-                                onClick={() => router.push(`/finance/cis/${scheme.id}`)}
+                                onClick={() => setSelectedSchemeId(scheme.id)}
                                 className="text-blue-600 hover:text-blue-900 mr-3"
                                 >
                                 View
@@ -401,6 +402,10 @@ const CISPage = () => {
                 </div>
             </div>
         </div>
+        <SchemeDetailModal 
+            schemeId={selectedSchemeId}
+            onClose={() => setSelectedSchemeId(null)}
+        />
     </div>
   );
 };
