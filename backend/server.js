@@ -154,7 +154,7 @@ wss.on('connection', (ws, req) => {
 db.sequelize.authenticate()
   .then(() => {
     console.log('Database connected');
-    // return db.sequelize.sync({ alter: true }); // consider false in production
+    return db.sequelize.sync({ alter: true }); // consider false in production
   })
   .then(() => console.log('Database synced'))
   .catch(err => console.error('Database connection error:', err));
